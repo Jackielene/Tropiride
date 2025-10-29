@@ -42,6 +42,15 @@ class User extends Authenticatable
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array<int, string>
+     */
+    protected $appends = [
+        'avatar_url',
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -103,5 +112,13 @@ class User extends Authenticatable
     public function isDriver(): bool
     {
         return $this->role === 'driver';
+    }
+
+    /**
+     * Check if user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 }

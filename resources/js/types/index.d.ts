@@ -33,6 +33,10 @@ export interface Booking {
     status: string;
     requested_at: string | null;
     created_at: string;
+    pickup_date?: string | null;
+    pickup_time?: string | null;
+    return_date?: string | null;
+    return_time?: string | null;
 }
 
 export interface SharedData {

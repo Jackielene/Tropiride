@@ -35,6 +35,10 @@ class TropirideProfileController extends Controller
                     'status' => $booking->status ?? 'pending',
                     'requested_at' => $booking->requested_at?->toISOString(),
                     'created_at' => $booking->created_at?->toISOString(),
+                    'pickup_date' => $booking->pickup_date,
+                    'pickup_time' => $booking->pickup_time,
+                    'return_date' => $booking->return_date,
+                    'return_time' => $booking->return_time,
                 ];
             });
         

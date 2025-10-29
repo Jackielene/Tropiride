@@ -29,6 +29,7 @@ class Booking extends Model
         'pickup_date',
         'return_date',
         'pickup_time',
+        'return_time',
         'passengers',
         'payment_method',
         'payment_status',

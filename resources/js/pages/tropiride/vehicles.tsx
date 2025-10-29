@@ -227,6 +227,13 @@ export default function TropirideVehicles() {
   const [isRequesting, setIsRequesting] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
+  
+  // Show success modal if flash message exists
+  useEffect(() => {
+    if (flash?.status) {
+      setShowSuccess(true);
+    }
+  }, [flash]);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
   const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
   const [mapZoom, setMapZoom] = useState<number>(14);
@@ -698,9 +705,16 @@ export default function TropirideVehicles() {
       pickup_date: pickupDate && pickupTime ? `${pickupDate} ${pickupTime}` : (pickupDate || null),
       return_date: isRoundTrip && returnDate && returnTime ? `${returnDate} ${returnTime}` : (isRoundTrip && returnDate ? returnDate : null),
     }, {
-      onSuccess: () => {
+      preserveScroll: true,
+      onSuccess: (page) => {
         setIsRequesting(false);
-        setShowSuccess(true);
+        // Check if there's a flash status message
+        if (page.props.flash?.status) {
+          setShowSuccess(true);
+        } else {
+          // Also show success even if no flash message
+          setShowSuccess(true);
+        }
         // Clear form fields after successful submission
         setDropoffLocation(null);
         setDropoffInputValue('');

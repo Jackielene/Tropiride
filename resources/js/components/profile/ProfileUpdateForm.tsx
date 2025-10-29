@@ -33,19 +33,38 @@ export default function ProfileUpdateForm({ user, profileData, onDataChange }: P
 
   // Update form data when profileData changes (e.g., when user cancels or page refreshes)
   useEffect(() => {
-    setFormData({
+    const newFormData = {
       name: profileData.name || '',
       email: profileData.email || '',
       phone: profileData.phone || '',
       age: profileData.age || '',
       address: profileData.address || '',
+    };
+    
+    // Only update if values actually changed
+    setFormData(prevData => {
+      if (
+        prevData.name !== newFormData.name ||
+        prevData.email !== newFormData.email ||
+        prevData.phone !== newFormData.phone ||
+        prevData.age !== newFormData.age ||
+        prevData.address !== newFormData.address
+      ) {
+        return newFormData;
+      }
+      return prevData;
     });
   }, [profileData.name, profileData.email, profileData.phone, profileData.age, profileData.address]);
 
   // Update parent component immediately when form data changes
   useEffect(() => {
-    onDataChange(formData);
-  }, [formData.name, formData.email, formData.phone, formData.age, formData.address]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Use a timeout to debounce updates and prevent infinite loops
+    const timeoutId = setTimeout(() => {
+      onDataChange(formData);
+    }, 0);
+    
+    return () => clearTimeout(timeoutId);
+  }, [formData.name, formData.email, formData.phone, formData.age, formData.address, onDataChange]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

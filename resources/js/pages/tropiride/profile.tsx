@@ -83,23 +83,45 @@ export default function TropirideProfile() {
   const handleProfileDataChange = useCallback((data: typeof profileData) => {
     setProfileData(prevData => {
       // Only update if data actually changed to prevent unnecessary re-renders
-      if (JSON.stringify(prevData) !== JSON.stringify(data)) {
+      if (
+        prevData.name !== data.name ||
+        prevData.email !== data.email ||
+        prevData.phone !== data.phone ||
+        prevData.age !== data.age ||
+        prevData.address !== data.address
+      ) {
         return data;
       }
       return prevData;
     });
   }, []);
 
-  // Update profileData when user data changes
+  // Update profileData when user data changes (only when not editing to prevent loops)
   useEffect(() => {
-    setProfileData({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      age: user?.age?.toString() || "",
-      address: user?.address || "",
-    });
-  }, [user]);
+    if (!isEditing && user) {
+      const newData = {
+        name: user?.name || "",
+        email: user?.email || "",
+        phone: user?.phone || "",
+        age: user?.age?.toString() || "",
+        address: user?.address || "",
+      };
+      
+      // Only update if the values actually changed
+      setProfileData(prevData => {
+        if (
+          prevData.name !== newData.name ||
+          prevData.email !== newData.email ||
+          prevData.phone !== newData.phone ||
+          prevData.age !== newData.age ||
+          prevData.address !== newData.address
+        ) {
+          return newData;
+        }
+        return prevData;
+      });
+    }
+  }, [user?.name, user?.email, user?.phone, user?.age, user?.address, isEditing]);
 
   const handleSave = () => {
     setIsSaving(true);
@@ -310,6 +332,35 @@ export default function TropirideProfile() {
       const date = dateStr ? new Date(dateStr) : new Date();
       const statusInfo = getStatusInfo(booking.status || 'pending');
       
+      // Format pickup date and time
+      let pickupDisplay = null;
+      if (booking.pickup_date) {
+        const pickupDate = new Date(booking.pickup_date);
+        pickupDisplay = {
+          date: booking.pickup_date,
+          time: booking.pickup_time || null,
+          formatted: booking.pickup_date ? new Date(booking.pickup_date).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }) : null,
+        };
+      }
+      
+      // Format return date and time
+      let returnDisplay = null;
+      if (booking.return_date) {
+        returnDisplay = {
+          date: booking.return_date,
+          time: booking.return_time || null,
+          formatted: booking.return_date ? new Date(booking.return_date).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }) : null,
+        };
+      }
+      
       return {
         id: booking.id,
         vehicle: booking.user_name || user?.name || "Ride Request",
@@ -324,6 +375,8 @@ export default function TropirideProfile() {
         dropoffLocation: booking.dropoff_location || '',
         distance: Number(booking.distance_km) || 0,
         timeMinutes: Number(booking.estimated_time_minutes) || 0,
+        pickupDate: pickupDisplay,
+        returnDate: returnDisplay,
       };
     } catch (error) {
       console.error('Error processing booking:', booking, error);
@@ -725,6 +778,42 @@ export default function TropirideProfile() {
                                   <div>
                                     <p className="text-gray-600">Duration</p>
                                     <p className="font-medium text-gray-900">{booking.timeMinutes} min</p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Pickup and Return Schedule */}
+                          {(booking.pickupDate || booking.returnDate) && (
+                            <div className="grid md:grid-cols-2 gap-3 mb-3 p-3 bg-cyan-50 rounded-lg border border-cyan-100">
+                              {booking.pickupDate && (
+                                <div className="flex items-start gap-2 text-sm">
+                                  <FaCalendarAlt className="text-cyan-600 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <p className="text-gray-600 font-medium">Pickup Schedule</p>
+                                    <p className="font-semibold text-gray-900">{booking.pickupDate.formatted}</p>
+                                    {booking.pickupDate.time && (
+                                      <p className="text-gray-700 text-xs mt-0.5">
+                                        <FaClock className="inline mr-1" />
+                                        {booking.pickupDate.time}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                              {booking.returnDate && (
+                                <div className="flex items-start gap-2 text-sm">
+                                  <FaCalendarAlt className="text-green-600 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <p className="text-gray-600 font-medium">Return Schedule</p>
+                                    <p className="font-semibold text-gray-900">{booking.returnDate.formatted}</p>
+                                    {booking.returnDate.time && (
+                                      <p className="text-gray-700 text-xs mt-0.5">
+                                        <FaClock className="inline mr-1" />
+                                        {booking.returnDate.time}
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
                               )}

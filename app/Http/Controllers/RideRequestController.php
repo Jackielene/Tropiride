@@ -58,8 +58,8 @@ class RideRequestController extends Controller
             $bookingData['vehicle_id'] = null;
         }
         
-        // Set pickup_date and return_date from validated data
-        if (isset($validated['pickup_date']) && $validated['pickup_date']) {
+        // Set pickup_date and return_date from validated data (only if columns exist)
+        if (isset($validated['pickup_date']) && $validated['pickup_date'] && Schema::hasColumn('bookings', 'pickup_date')) {
             // Handle both formats: "2025-10-28 14:30" or "2025-10-28"
             $pickupDateTime = $validated['pickup_date'];
             if (strpos($pickupDateTime, ' ') !== false) {
@@ -74,13 +74,17 @@ class RideRequestController extends Controller
                 $bookingData['pickup_date'] = $pickupDateTime;
             }
         }
-        if (isset($validated['return_date']) && $validated['return_date']) {
+        if (isset($validated['return_date']) && $validated['return_date'] && Schema::hasColumn('bookings', 'return_date')) {
             // Handle both formats: "2025-10-28 14:30" or "2025-10-28"
             $returnDateTime = $validated['return_date'];
             if (strpos($returnDateTime, ' ') !== false) {
                 // Has time component
                 list($date, $time) = explode(' ', $returnDateTime);
                 $bookingData['return_date'] = $date;
+                // Store return time if column exists
+                if (Schema::hasColumn('bookings', 'return_time')) {
+                    $bookingData['return_time'] = $time;
+                }
             } else {
                 // Date only
                 $bookingData['return_date'] = $returnDateTime;

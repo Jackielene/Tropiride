@@ -17,7 +17,7 @@ return new class extends Migration
                 $table->dropColumn('role');
             }
             // Add role column with proper enum definition
-            $table->enum('role', ['customer', 'driver'])->default('customer')->after('email');
+            $table->enum('role', ['customer', 'driver', 'admin'])->default('customer')->after('email');
         });
     }
 

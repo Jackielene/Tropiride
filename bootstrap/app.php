@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Middleware\EnsureAdminRole;
 use App\Http\Middleware\EnsureCustomerRole;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RedirectBasedOnRole;
+use App\Http\Middleware\RedirectToRegisterIfGuest;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -25,6 +28,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'customer' => EnsureCustomerRole::class,
+            'admin' => EnsureAdminRole::class,
+            'redirect.to.register' => RedirectToRegisterIfGuest::class,
+            'redirect.by.role' => RedirectBasedOnRole::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));

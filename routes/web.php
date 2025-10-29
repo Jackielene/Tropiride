@@ -4,7 +4,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Home route - redirects authenticated users based on role
 Route::get('/', function () {
+    if (auth()->check()) {
+        $user = auth()->user();
+        
+        // Redirect admin users to admin dashboard
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+        
+        // Redirect customer users to tropiride landing page
+        if ($user->isCustomer()) {
+            return redirect()->route('tropiride.landing');
+        }
+    }
+    
     return Inertia::render('welcome');
 })->name('home');
 
@@ -52,13 +67,31 @@ Route::middleware('auth')->get('/debug/avatar', function () {
     ]);
 });
 
+// Debug route for checking user role and access
+Route::middleware('auth')->get('/debug/role', function () {
+    $user = auth()->user();
+    return response()->json([
+        'authenticated' => auth()->check(),
+        'user_id' => $user->id,
+        'user_name' => $user->name,
+        'user_email' => $user->email,
+        'user_role' => $user->role,
+        'is_customer' => $user->isCustomer(),
+        'is_admin' => $user->isAdmin(),
+        'is_driver' => $user->isDriver(),
+        'can_access_tropiride_landing' => true,
+        'can_access_admin_dashboard' => $user->isAdmin(),
+        'expected_redirect' => $user->isAdmin() ? 'admin.dashboard' : 'tropiride.landing',
+    ]);
+});
+
 Route::middleware(['auth', 'customer'])->get('/tropiride/booking', function () {
     return Inertia::render('tropiride/booking', [
         'user' => auth()->user(),
     ]);
 })->name('tropiride.booking');
 
-Route::get('/tropiride/vehicles', function () {
+Route::middleware('redirect.to.register')->get('/tropiride/vehicles', function () {
     return Inertia::render('tropiride/vehicles');
 })->name('tropiride.vehicles');
 
@@ -102,10 +135,66 @@ Route::middleware(['auth', 'customer'])->get('/tropiride/confirmation', function
     ]);
 })->name('tropiride.confirmation');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+// Dashboard route - redirects based on user role
+Route::middleware(['auth', 'verified'])->get('dashboard', function () {
+    $user = auth()->user();
+    
+    // Redirect admin users to admin dashboard
+    if ($user->isAdmin()) {
+        return redirect()->route('admin.dashboard');
+    }
+    
+    // Redirect customer users to tropiride landing page
+    if ($user->isCustomer()) {
+        return redirect()->route('tropiride.landing');
+    }
+    
+    // Fallback for other roles
+    return redirect()->route('tropiride.landing');
+})->name('dashboard');
+
+// Admin Routes
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard');
+    
+    // Debug route to check admin authentication
+    Route::get('/debug', function () {
+        $user = auth()->user();
+        return response()->json([
+            'authenticated' => auth()->check(),
+            'user_id' => $user->id ?? null,
+            'user_email' => $user->email ?? null,
+            'user_role' => $user->role ?? null,
+            'is_admin' => $user->isAdmin() ?? false,
+        ]);
+    })->name('debug');
+    
+    // Debug route to check dashboard data
+    Route::get('/debug-data', function () {
+        $users = \App\Models\User::all();
+        $bookings = \App\Models\Booking::with('user')->get();
+        
+        return response()->json([
+            'users_count' => $users->count(),
+            'users' => $users->map(fn($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+                'role' => $u->role,
+                'avatar' => $u->avatar,
+                'avatar_url' => $u->avatar_url,
+            ]),
+            'bookings_count' => $bookings->count(),
+            'bookings' => $bookings->map(fn($b) => [
+                'id' => $b->id,
+                'user_id' => $b->user_id,
+                'user_name' => $b->user?->name,
+                'pickup' => $b->pickup_location,
+                'dropoff' => $b->dropoff_location,
+                'status' => $b->status,
+            ]),
+        ]);
+    })->name('debug.data');
 });
 
 require __DIR__.'/settings.php';

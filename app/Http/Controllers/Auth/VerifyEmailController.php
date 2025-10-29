@@ -13,12 +13,25 @@ class VerifyEmailController extends Controller
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
-            return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        $user = $request->user();
+        
+        if ($user && $user->hasVerifiedEmail()) {
+            // Redirect admin users to admin dashboard
+            if ($user->isAdmin()) {
+                return redirect()->intended(route('admin.dashboard', absolute: false).'?verified=1');
+            }
+            // Redirect customer users to tropiride landing page
+            return redirect()->intended(route('tropiride.landing', absolute: false).'?verified=1');
         }
 
         $request->fulfill();
 
-        return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
+        // Redirect admin users to admin dashboard
+        if ($user && $user->isAdmin()) {
+            return redirect()->intended(route('admin.dashboard', absolute: false).'?verified=1');
+        }
+
+        // Redirect customer users to tropiride landing page
+        return redirect()->intended(route('tropiride.landing', absolute: false).'?verified=1');
     }
 }
