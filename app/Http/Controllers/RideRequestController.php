@@ -26,6 +26,8 @@ class RideRequestController extends Controller
             'estimated_time_minutes' => 'required|integer',
             'pickup_date' => 'nullable|date',
             'return_date' => 'nullable|date|after_or_equal:pickup_date',
+        ], [
+            'return_date.after_or_equal' => 'Return date/time must be after or equal to pickup date/time.',
         ]);
 
         $bookingData = [

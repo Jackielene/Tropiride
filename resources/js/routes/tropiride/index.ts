@@ -651,7 +651,7 @@ vehicles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     vehicles.form = vehiclesForm
 /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
 export const bookings = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -666,7 +666,7 @@ bookings.definition = {
 
 /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
 bookings.url = (options?: RouteQueryOptions) => {
@@ -675,7 +675,7 @@ bookings.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
 bookings.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -684,7 +684,7 @@ bookings.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
 bookings.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -694,7 +694,7 @@ bookings.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
     const bookingsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -704,7 +704,7 @@ bookings.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
         bookingsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -713,7 +713,7 @@ bookings.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
         bookingsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

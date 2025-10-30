@@ -251,10 +251,32 @@ export default function TropirideVehicles() {
   const [returnDate, setReturnDate] = useState<string>('');
   const [returnTime, setReturnTime] = useState<string>('');
   const [isRoundTrip, setIsRoundTrip] = useState(false);
+  const [dateValidationError, setDateValidationError] = useState<string>('');
   const pickupInputRef = useRef<HTMLInputElement>(null);
   const dropoffInputRef = useRef<HTMLInputElement>(null);
   const geocodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const autocompleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Validate dates whenever they change
+  useEffect(() => {
+    if (!isRoundTrip || !pickupDate || !returnDate) {
+      setDateValidationError('');
+      return;
+    }
+
+    // Construct full datetime strings for comparison
+    const pickupDateTime = pickupDate + (pickupTime ? ` ${pickupTime}` : ' 00:00');
+    const returnDateTime = returnDate + (returnTime ? ` ${returnTime}` : ' 00:00');
+
+    const pickupTimestamp = new Date(pickupDateTime).getTime();
+    const returnTimestamp = new Date(returnDateTime).getTime();
+
+    if (returnTimestamp < pickupTimestamp) {
+      setDateValidationError('Return date/time must be after or equal to pickup date/time');
+    } else {
+      setDateValidationError('');
+    }
+  }, [isRoundTrip, pickupDate, pickupTime, returnDate, returnTime]);
 
   // Auto-detect location on mount - GPS automatically requested with high accuracy
   useEffect(() => {
@@ -690,6 +712,12 @@ export default function TropirideVehicles() {
   const handleRequestRide = () => {
     if (!pickupLocation || !dropoffLocation || !estimatedFare || !estimatedDistance || !estimatedTime) return;
     
+    // Prevent submission if there's a date validation error
+    if (dateValidationError) {
+      alert(dateValidationError);
+      return;
+    }
+    
     setIsRequesting(true);
     
     router.post('/tropiride/ride-request', {
@@ -727,7 +755,20 @@ export default function TropirideVehicles() {
       onError: (errors) => {
         setIsRequesting(false);
         console.error('Error requesting ride:', errors);
-        alert('Failed to send ride request. Please make sure you are logged in.');
+        
+        // Display specific validation errors
+        const errorMessages = Object.entries(errors)
+          .map(([field, messages]) => {
+            const messageArray = Array.isArray(messages) ? messages : [messages];
+            return messageArray.join('\n');
+          })
+          .join('\n');
+        
+        if (errorMessages) {
+          alert(`Failed to send ride request:\n\n${errorMessages}`);
+        } else {
+          alert('Failed to send ride request. Please try again or contact support.');
+        }
       },
       onFinish: () => {
         setIsRequesting(false);
@@ -1234,6 +1275,16 @@ export default function TropirideVehicles() {
                         </div>
                       </div>
                     </div>
+                    
+                    {/* Date Validation Error */}
+                    {dateValidationError && (
+                      <div className="mt-3 p-2.5 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-600 flex items-center gap-2">
+                          <span className="text-red-500">⚠️</span>
+                          {dateValidationError}
+                        </p>
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </div>
@@ -1243,9 +1294,9 @@ export default function TropirideVehicles() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleRequestRide}
-                disabled={!pickupLocation || !dropoffLocation || isRequesting || (isRoundTrip && !returnDate)}
+                disabled={!pickupLocation || !dropoffLocation || isRequesting || (isRoundTrip && !returnDate) || !!dateValidationError}
                 className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 ${
-                  pickupLocation && dropoffLocation && !isRequesting && (!isRoundTrip || returnDate)
+                  pickupLocation && dropoffLocation && !isRequesting && (!isRoundTrip || returnDate) && !dateValidationError
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:shadow-xl hover:shadow-cyan-500/50 cursor-pointer'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}

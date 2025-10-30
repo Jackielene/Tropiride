@@ -56,7 +56,7 @@ store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     store.form = storeForm
 /**
 * @see \App\Http\Controllers\RideRequestController::index
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -71,7 +71,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\RideRequestController::index
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -80,7 +80,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RideRequestController::index
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -89,7 +89,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\RideRequestController::index
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -99,7 +99,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\RideRequestController::index
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -109,7 +109,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\RideRequestController::index
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -118,7 +118,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\RideRequestController::index
- * @see app/Http/Controllers/RideRequestController.php:123
+ * @see app/Http/Controllers/RideRequestController.php:125
  * @route '/tropiride/bookings'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -134,7 +134,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\RideRequestController::cancel
- * @see app/Http/Controllers/RideRequestController.php:137
+ * @see app/Http/Controllers/RideRequestController.php:139
  * @route '/tropiride/bookings/{id}/cancel'
  */
 export const cancel = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -149,7 +149,7 @@ cancel.definition = {
 
 /**
 * @see \App\Http\Controllers\RideRequestController::cancel
- * @see app/Http/Controllers/RideRequestController.php:137
+ * @see app/Http/Controllers/RideRequestController.php:139
  * @route '/tropiride/bookings/{id}/cancel'
  */
 cancel.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -177,7 +177,7 @@ cancel.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\RideRequestController::cancel
- * @see app/Http/Controllers/RideRequestController.php:137
+ * @see app/Http/Controllers/RideRequestController.php:139
  * @route '/tropiride/bookings/{id}/cancel'
  */
 cancel.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -187,7 +187,7 @@ cancel.post = (args: { id: string | number } | [id: string | number ] | string |
 
     /**
 * @see \App\Http\Controllers\RideRequestController::cancel
- * @see app/Http/Controllers/RideRequestController.php:137
+ * @see app/Http/Controllers/RideRequestController.php:139
  * @route '/tropiride/bookings/{id}/cancel'
  */
     const cancelForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -197,7 +197,7 @@ cancel.post = (args: { id: string | number } | [id: string | number ] | string |
 
             /**
 * @see \App\Http\Controllers\RideRequestController::cancel
- * @see app/Http/Controllers/RideRequestController.php:137
+ * @see app/Http/Controllers/RideRequestController.php:139
  * @route '/tropiride/bookings/{id}/cancel'
  */
         cancelForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
