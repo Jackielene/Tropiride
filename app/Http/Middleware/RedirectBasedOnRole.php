@@ -25,6 +25,11 @@ class RedirectBasedOnRole
                 return redirect()->route('admin.dashboard');
             }
             
+            // Redirect driver users to driver dashboard
+            if ($user->isDriver()) {
+                return redirect()->route('driver.dashboard');
+            }
+            
             // Redirect customer users to tropiride landing page
             if ($user->isCustomer()) {
                 return redirect()->route('tropiride.landing');

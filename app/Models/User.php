@@ -29,6 +29,13 @@ class User extends Authenticatable
         'address',
         'avatar',
         'role',
+        'profile_completed',
+        'verification_status',
+        'driver_license_front',
+        'driver_license_back',
+        'verified_at',
+        'verified_by',
+        'rejection_reason',
     ];
 
     /**
@@ -48,6 +55,8 @@ class User extends Authenticatable
      */
     protected $appends = [
         'avatar_url',
+        'driver_license_front_url',
+        'driver_license_back_url',
     ];
 
     /**
@@ -60,6 +69,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'profile_completed' => 'boolean',
+            'verified_at' => 'datetime',
         ];
     }
 
@@ -120,5 +131,117 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user has completed their profile.
+     */
+    public function hasCompletedProfile(): bool
+    {
+        return $this->profile_completed === true;
+    }
+
+    /**
+     * Check if user is verified (approved by admin).
+     */
+    public function isVerified(): bool
+    {
+        return $this->verification_status === 'approved';
+    }
+
+    /**
+     * Check if user's verification is pending.
+     */
+    public function isVerificationPending(): bool
+    {
+        return $this->verification_status === 'pending';
+    }
+
+    /**
+     * Check if user's verification was rejected.
+     */
+    public function isVerificationRejected(): bool
+    {
+        return $this->verification_status === 'rejected';
+    }
+
+    /**
+     * Check if profile is ready for verification.
+     * Profile is ready if all required fields are filled.
+     */
+    public function isProfileReadyForVerification(): bool
+    {
+        return !empty($this->name) &&
+               !empty($this->email) &&
+               !empty($this->phone) &&
+               $this->age !== null && $this->age >= 18 &&
+               !empty($this->address) &&
+               !empty($this->avatar) &&
+               !empty($this->driver_license_front) &&
+               !empty($this->driver_license_back);
+    }
+
+    /**
+     * Get the URL for driver license front.
+     */
+    public function getDriverLicenseFrontUrlAttribute(): ?string
+    {
+        if ($this->driver_license_front) {
+            return asset('storage/' . $this->driver_license_front);
+        }
+        return null;
+    }
+
+    /**
+     * Get the URL for driver license back.
+     */
+    public function getDriverLicenseBackUrlAttribute(): ?string
+    {
+        if ($this->driver_license_back) {
+            return asset('storage/' . $this->driver_license_back);
+        }
+        return null;
+    }
+
+    /**
+     * Mark profile as completed and ready for verification.
+     */
+    public function markProfileAsCompleted(): void
+    {
+        $this->profile_completed = true;
+        $this->verification_status = 'pending';
+        $this->save();
+    }
+
+    /**
+     * Approve user verification.
+     */
+    public function approveVerification(?int $adminId = null): void
+    {
+        $this->verification_status = 'approved';
+        $this->verified_at = now();
+        $this->verified_by = $adminId;
+        $this->rejection_reason = null;
+        $this->save();
+    }
+
+    /**
+     * Reject user verification.
+     */
+    public function rejectVerification(string $reason, ?int $adminId = null): void
+    {
+        $this->verification_status = 'rejected';
+        $this->verified_at = null;
+        $this->verified_by = $adminId;
+        $this->rejection_reason = $reason;
+        $this->save();
+    }
+
+    /**
+     * Get the admin who verified this user.
+     */
+    public function verifier()
+    {
+        return $this->belongsTo(User::class, 'verified_by');
     }
 }

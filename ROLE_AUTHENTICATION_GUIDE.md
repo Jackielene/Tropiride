@@ -15,9 +15,9 @@ Your application has **3 user roles**, and each role is directed to different ar
 - **Middleware:** `auth`, `customer` (only for protected routes like profile, booking)
 
 ### 3. **Driver Role** (`role = 'driver'`)
-- **Login Redirect:** `/tropiride` (Tropiride landing page)
-- **Access:** Same as customer currently
-- **Middleware:** `auth`
+- **Login Redirect:** `/driver/dashboard`
+- **Access:** Driver dashboard with ride management, earnings tracking
+- **Middleware:** `auth`, `driver`
 
 ---
 

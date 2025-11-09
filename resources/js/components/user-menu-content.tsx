@@ -24,6 +24,13 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
         router.flushAll();
     };
 
+    // Determine settings URL based on user role
+    const settingsUrl = user.role === 'driver' 
+        ? '/driver/settings/profile'
+        : user.role === 'admin'
+        ? '/admin/settings/profile'
+        : edit().url;
+
     return (
         <>
             <DropdownMenuLabel className="p-0 font-normal">
@@ -36,7 +43,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 <DropdownMenuItem asChild>
                     <Link
                         className="block w-full"
-                        href={edit().url}
+                        href={settingsUrl}
                         as="button"
                         prefetch
                         onClick={cleanup}

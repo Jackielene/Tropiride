@@ -14,6 +14,11 @@ Route::get('/', function () {
             return redirect()->route('admin.dashboard');
         }
         
+        // Redirect driver users to driver dashboard
+        if ($user->isDriver()) {
+            return redirect()->route('driver.dashboard');
+        }
+        
         // Redirect customer users to tropiride landing page
         if ($user->isCustomer()) {
             return redirect()->route('tropiride.landing');
@@ -48,6 +53,7 @@ Route::get('/tropiride/terms', function () {
     return Inertia::render('tropiride/terms');
 })->name('tropiride.terms');
 
+// Customer Profile Routes (no verification required)
 Route::middleware(['auth', 'customer'])->get('/tropiride/profile', [App\Http\Controllers\TropirideProfileController::class, 'show'])->name('tropiride.profile');
 Route::middleware(['auth', 'customer'])->patch('/tropiride/profile', [App\Http\Controllers\TropirideProfileController::class, 'update'])->name('tropiride.profile.update');
 Route::middleware(['auth', 'customer'])->post('/tropiride/profile/avatar', [App\Http\Controllers\TropirideProfileController::class, 'updateAvatar'])->name('tropiride.profile.avatar');
@@ -70,6 +76,16 @@ Route::middleware('auth')->get('/debug/avatar', function () {
 // Debug route for checking user role and access
 Route::middleware('auth')->get('/debug/role', function () {
     $user = auth()->user();
+    
+    $expectedRedirect = 'tropiride.landing';
+    if ($user->isAdmin()) {
+        $expectedRedirect = 'admin.dashboard';
+    } elseif ($user->isDriver()) {
+        $expectedRedirect = 'driver.dashboard';
+    } elseif ($user->isCustomer()) {
+        $expectedRedirect = 'tropiride.landing';
+    }
+    
     return response()->json([
         'authenticated' => auth()->check(),
         'user_id' => $user->id,
@@ -79,23 +95,24 @@ Route::middleware('auth')->get('/debug/role', function () {
         'is_customer' => $user->isCustomer(),
         'is_admin' => $user->isAdmin(),
         'is_driver' => $user->isDriver(),
-        'can_access_tropiride_landing' => true,
-        'can_access_admin_dashboard' => $user->isAdmin(),
-        'expected_redirect' => $user->isAdmin() ? 'admin.dashboard' : 'tropiride.landing',
+        'expected_redirect_after_login' => $expectedRedirect,
+        'fortify_home_config' => config('fortify.home'),
     ]);
 });
 
+// Vehicles page - customers can access without verification
+Route::middleware('redirect.to.register')->get('/tropiride/vehicles', function () {
+    return Inertia::render('tropiride/vehicles');
+})->name('tropiride.vehicles');
+
+// Booking Routes - customers can book without verification
 Route::middleware(['auth', 'customer'])->get('/tropiride/booking', function () {
     return Inertia::render('tropiride/booking', [
         'user' => auth()->user(),
     ]);
 })->name('tropiride.booking');
 
-Route::middleware('redirect.to.register')->get('/tropiride/vehicles', function () {
-    return Inertia::render('tropiride/vehicles');
-})->name('tropiride.vehicles');
-
-// Ride Request Routes
+// Ride Request Routes - customers can request rides without verification
 Route::middleware(['auth', 'customer'])->post('/tropiride/ride-request', [App\Http\Controllers\RideRequestController::class, 'store'])->name('tropiride.ride.request');
 Route::middleware(['auth', 'customer'])->get('/tropiride/bookings', [App\Http\Controllers\RideRequestController::class, 'index'])->name('tropiride.bookings');
 Route::middleware(['auth', 'customer'])->post('/tropiride/bookings/{id}/cancel', [App\Http\Controllers\RideRequestController::class, 'cancel'])->name('tropiride.bookings.cancel');
@@ -136,12 +153,17 @@ Route::middleware(['auth', 'customer'])->get('/tropiride/confirmation', function
 })->name('tropiride.confirmation');
 
 // Dashboard route - redirects based on user role
-Route::middleware(['auth', 'verified'])->get('dashboard', function () {
+Route::middleware(['auth'])->get('dashboard', function () {
     $user = auth()->user();
     
     // Redirect admin users to admin dashboard
     if ($user->isAdmin()) {
         return redirect()->route('admin.dashboard');
+    }
+    
+    // Redirect driver users to driver dashboard
+    if ($user->isDriver()) {
+        return redirect()->route('driver.dashboard');
     }
     
     // Redirect customer users to tropiride landing page
@@ -156,6 +178,13 @@ Route::middleware(['auth', 'verified'])->get('dashboard', function () {
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\AdminDashboardController::class, 'index'])->name('dashboard');
+    
+    // Verification Management Routes
+    Route::get('/verifications', [App\Http\Controllers\VerificationController::class, 'index'])->name('verifications.index');
+    Route::get('/verifications/{userId}', [App\Http\Controllers\VerificationController::class, 'show'])->name('verifications.show');
+    Route::post('/verifications/{userId}/approve', [App\Http\Controllers\VerificationController::class, 'approve'])->name('verifications.approve');
+    Route::post('/verifications/{userId}/reject', [App\Http\Controllers\VerificationController::class, 'reject'])->name('verifications.reject');
+    Route::post('/verifications/{userId}/revoke', [App\Http\Controllers\VerificationController::class, 'revoke'])->name('verifications.revoke');
     
     // Debug route to check admin authentication
     Route::get('/debug', function () {
@@ -197,5 +226,53 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     })->name('debug.data');
 });
 
+// Driver Routes
+Route::middleware(['auth', 'driver'])->prefix('driver')->name('driver.')->group(function () {
+    // Dashboard accessible without verification (to complete profile)
+    Route::get('/dashboard', [App\Http\Controllers\DriverDashboardController::class, 'index'])->name('dashboard');
+    
+    // Debug route to check driver data
+    Route::get('/debug', function () {
+        $driver = auth()->user();
+        return response()->json([
+            'id' => $driver->id,
+            'name' => $driver->name,
+            'email' => $driver->email,
+            'phone' => $driver->phone,
+            'age' => $driver->age,
+            'address' => $driver->address,
+            'avatar' => $driver->avatar,
+            'avatar_url' => $driver->avatar_url,
+            'profile_completed' => $driver->profile_completed,
+            'verification_status' => $driver->verification_status,
+            'driver_license_front' => $driver->driver_license_front,
+            'driver_license_back' => $driver->driver_license_back,
+            'driver_license_front_url' => $driver->driver_license_front_url,
+            'driver_license_back_url' => $driver->driver_license_back_url,
+            'verified_at' => $driver->verified_at,
+            'rejection_reason' => $driver->rejection_reason,
+            'is_profile_ready' => $driver->isProfileReadyForVerification(),
+            'is_verified' => $driver->isVerified(),
+            'has_completed_profile' => $driver->hasCompletedProfile(),
+            'is_verification_pending' => $driver->isVerificationPending(),
+            'is_verification_rejected' => $driver->isVerificationRejected(),
+        ]);
+    })->name('debug');
+    
+    // Driver Profile Management (no verification required)
+    Route::patch('/profile', [App\Http\Controllers\DriverProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/avatar', [App\Http\Controllers\DriverProfileController::class, 'updateAvatar'])->name('profile.avatar');
+    Route::post('/profile/license-front', [App\Http\Controllers\DriverProfileController::class, 'uploadLicenseFront'])->name('profile.license.front');
+    Route::post('/profile/license-back', [App\Http\Controllers\DriverProfileController::class, 'uploadLicenseBack'])->name('profile.license.back');
+    Route::post('/profile/submit-verification', [App\Http\Controllers\DriverProfileController::class, 'submitForVerification'])->name('profile.submit.verification');
+    Route::post('/profile/resubmit-verification', [App\Http\Controllers\DriverProfileController::class, 'resubmitVerification'])->name('profile.resubmit.verification');
+    
+    // These routes require driver verification
+    Route::middleware('verified')->post('/bookings/{bookingId}/accept', [App\Http\Controllers\DriverDashboardController::class, 'acceptBooking'])->name('booking.accept');
+    Route::middleware('verified')->patch('/bookings/{bookingId}/status', [App\Http\Controllers\DriverDashboardController::class, 'updateBookingStatus'])->name('booking.status');
+});
+
 require __DIR__.'/settings.php';
+require __DIR__.'/driver-settings.php';
+require __DIR__.'/admin-settings.php';
 require __DIR__.'/auth.php';

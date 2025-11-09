@@ -934,7 +934,7 @@ export default function TropirideProfile() {
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
               variant="outline"
-              onClick={handleCancelDialogClose}
+              onClick={() => handleCancelDialogClose(false)}
               disabled={cancellingBookingId !== null}
               className="border-gray-300 hover:bg-gray-50"
             >

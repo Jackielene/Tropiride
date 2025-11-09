@@ -2,6 +2,9 @@
 
 use App\Http\Middleware\EnsureAdminRole;
 use App\Http\Middleware\EnsureCustomerRole;
+use App\Http\Middleware\EnsureDriverRole;
+use App\Http\Middleware\EnsureProfileCompleted;
+use App\Http\Middleware\EnsureVerified;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RedirectBasedOnRole;
@@ -29,8 +32,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'customer' => EnsureCustomerRole::class,
             'admin' => EnsureAdminRole::class,
+            'driver' => EnsureDriverRole::class,
             'redirect.to.register' => RedirectToRegisterIfGuest::class,
             'redirect.by.role' => RedirectBasedOnRole::class,
+            'profile.completed' => EnsureProfileCompleted::class,
+            'verified' => EnsureVerified::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));

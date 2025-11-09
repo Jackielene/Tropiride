@@ -1,5 +1,9 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
+import verifications from './verifications'
 import debug070426 from './debug'
+import profile from './profile'
+import password from './password'
+import twoFactor from './two-factor'
 /**
 * @see \App\Http\Controllers\AdminDashboardController::dashboard
  * @see app/Http/Controllers/AdminDashboardController.php:17
@@ -79,7 +83,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     dashboard.form = dashboardForm
 /**
- * @see routes/web.php:161
+ * @see routes/web.php:190
  * @route '/admin/debug'
  */
 export const debug = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -93,7 +97,7 @@ debug.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:161
+ * @see routes/web.php:190
  * @route '/admin/debug'
  */
 debug.url = (options?: RouteQueryOptions) => {
@@ -101,7 +105,7 @@ debug.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:161
+ * @see routes/web.php:190
  * @route '/admin/debug'
  */
 debug.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -109,7 +113,7 @@ debug.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:161
+ * @see routes/web.php:190
  * @route '/admin/debug'
  */
 debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -118,7 +122,7 @@ debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:161
+ * @see routes/web.php:190
  * @route '/admin/debug'
  */
     const debugForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -127,7 +131,7 @@ debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:161
+ * @see routes/web.php:190
  * @route '/admin/debug'
  */
         debugForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,7 +139,7 @@ debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:161
+ * @see routes/web.php:190
  * @route '/admin/debug'
  */
         debugForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -151,7 +155,11 @@ debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     debug.form = debugForm
 const admin = {
     dashboard: Object.assign(dashboard, dashboard),
+verifications: Object.assign(verifications, verifications),
 debug: Object.assign(debug, debug070426),
+profile: Object.assign(profile, profile),
+password: Object.assign(password, password),
+twoFactor: Object.assign(twoFactor, twoFactor),
 }
 
 export default admin

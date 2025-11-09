@@ -48,6 +48,16 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        // Redirect users based on their role
+        if ($user->isAdmin()) {
+            return redirect()->intended(route('admin.dashboard', absolute: false));
+        }
+
+        if ($user->isDriver()) {
+            return redirect()->intended(route('driver.dashboard', absolute: false));
+        }
+
+        // Redirect customer users to tropiride landing page
         return redirect()->intended(route('tropiride.landing', absolute: false));
     }
 }

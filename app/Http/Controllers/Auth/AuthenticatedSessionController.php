@@ -50,6 +50,12 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('admin.dashboard', absolute: false));
         }
 
+        // Redirect driver users to driver dashboard
+        if ($user->isDriver()) {
+            return redirect()->intended(route('driver.dashboard', absolute: false));
+        }
+
+        // Redirect customer users to tropiride landing page
         return redirect()->intended(route('tropiride.landing', absolute: false));
     }
 

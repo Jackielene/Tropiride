@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { 
     Users, 
     UserCheck, 
@@ -18,8 +19,10 @@ import {
     ArrowUpRight,
     ArrowDownRight,
     Activity,
-    Wallet
+    Wallet,
+    Shield
 } from 'lucide-react';
+import { Link } from '@inertiajs/react';
 
 interface StatCardProps {
     title: string;
@@ -155,6 +158,9 @@ interface Props {
         cancelledBookings: number;
         totalRevenue: number;
         monthlyRevenue: number;
+        pendingVerifications: number;
+        approvedVerifications: number;
+        rejectedVerifications: number;
     };
     recentUsers: User[];
     newUsers: User[];
@@ -174,6 +180,9 @@ export default function AdminDashboard({
         totalBookings: 0,
         pendingBookings: 0,
         completedBookings: 0,
+        pendingVerifications: 0,
+        approvedVerifications: 0,
+        rejectedVerifications: 0,
         cancelledBookings: 0,
         totalRevenue: 0,
         monthlyRevenue: 0,
@@ -276,6 +285,33 @@ export default function AdminDashboard({
                         color="orange"
                     />
                 </div>
+
+                {/* Pending Verifications Alert */}
+                {stats.pendingVerifications > 0 && (
+                    <Card className="border-2 border-orange-300 dark:border-orange-800 shadow-lg">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-orange-100 dark:bg-orange-900 rounded-full">
+                                        <Shield className="h-8 w-8 text-orange-600 dark:text-orange-400" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold">Driver Verifications Pending</h3>
+                                        <p className="text-muted-foreground">
+                                            {stats.pendingVerifications} {stats.pendingVerifications === 1 ? 'driver' : 'drivers'} waiting for approval
+                                        </p>
+                                    </div>
+                                </div>
+                                <Link href="/admin/verifications">
+                                    <Button className="bg-orange-600 hover:bg-orange-700">
+                                        Review Now
+                                        <ArrowUpRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </Link>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Booking Status Quick View */}
                 {bookingsByStatus.length > 0 && (

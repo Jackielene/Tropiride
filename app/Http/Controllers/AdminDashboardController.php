@@ -23,6 +23,13 @@ class AdminDashboardController extends Controller
             $totalDrivers = User::where('role', 'driver')->count() ?? 0;
             $totalAdmins = User::where('role', 'admin')->count() ?? 0;
             
+            // Get verification statistics
+            $pendingVerifications = User::where('verification_status', 'pending')
+                ->where('profile_completed', true)
+                ->count() ?? 0;
+            $approvedVerifications = User::where('verification_status', 'approved')->count() ?? 0;
+            $rejectedVerifications = User::where('verification_status', 'rejected')->count() ?? 0;
+            
             // Get recent users (last 30 days)
             $recentUsers = User::where('created_at', '>=', now()->subDays(30)->startOfDay())
                 ->orderBy('created_at', 'desc')
@@ -229,6 +236,9 @@ class AdminDashboardController extends Controller
                     'cancelledBookings' => $cancelledBookings,
                     'totalRevenue' => round($totalRevenue, 2),
                     'monthlyRevenue' => round($monthlyRevenue, 2),
+                    'pendingVerifications' => $pendingVerifications,
+                    'approvedVerifications' => $approvedVerifications,
+                    'rejectedVerifications' => $rejectedVerifications,
                 ],
                 'recentUsers' => $recentUsers,
                 'newUsers' => $newUsers,
@@ -258,6 +268,9 @@ class AdminDashboardController extends Controller
                     'cancelledBookings' => 0,
                     'totalRevenue' => 0,
                     'monthlyRevenue' => 0,
+                    'pendingVerifications' => 0,
+                    'approvedVerifications' => 0,
+                    'rejectedVerifications' => 0,
                 ],
                 'recentUsers' => [],
                 'newUsers' => [],

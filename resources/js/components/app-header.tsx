@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Menu, Search } from 'lucide-react';
+import { LayoutGrid, Menu, Search, ShieldCheck, Settings } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -42,6 +42,16 @@ const mainNavItems: NavItem[] = [
         title: 'Admin Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Driver Verification',
+        href: '/admin/verifications',
+        icon: ShieldCheck,
+    },
+    {
+        title: 'Settings',
+        href: '/admin/settings/profile',
+        icon: Settings,
     },
 ];
 

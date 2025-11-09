@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
- * @see routes/web.php:103
+ * @see routes/web.php:120
  * @route '/tropiride/booking/confirm'
  */
 export const confirm = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -14,7 +14,7 @@ confirm.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
- * @see routes/web.php:103
+ * @see routes/web.php:120
  * @route '/tropiride/booking/confirm'
  */
 confirm.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ confirm.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:103
+ * @see routes/web.php:120
  * @route '/tropiride/booking/confirm'
  */
 confirm.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -31,7 +31,7 @@ confirm.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
 })
 
     /**
- * @see routes/web.php:103
+ * @see routes/web.php:120
  * @route '/tropiride/booking/confirm'
  */
     const confirmForm = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -40,7 +40,7 @@ confirm.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
     })
 
             /**
- * @see routes/web.php:103
+ * @see routes/web.php:120
  * @route '/tropiride/booking/confirm'
  */
         confirmForm.post = (options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

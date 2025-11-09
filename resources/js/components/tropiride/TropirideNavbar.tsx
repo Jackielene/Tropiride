@@ -18,6 +18,11 @@ export default function TropirideNavbar({ activeLink }: TropirideNavbarProps) {
   const dropdownRef = useRef<HTMLDivElement>(null)
   
   const isAuthenticated = auth.user && auth.user.id
+  
+  // Determine settings URL based on user role
+  const settingsUrl = auth.user?.role === 'driver' 
+    ? '/driver/settings/profile' 
+    : '/settings/profile'
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -191,7 +196,7 @@ export default function TropirideNavbar({ activeLink }: TropirideNavbarProps) {
                           <span className="font-medium">My Profile</span>
                       </Link>
                       <Link
-                        href="/settings/profile"
+                        href={settingsUrl}
                           className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 hover:text-cyan-700 transition-all duration-200 group/item"
                         onClick={() => setIsProfileDropdownOpen(false)}
                       >
@@ -304,7 +309,7 @@ export default function TropirideNavbar({ activeLink }: TropirideNavbarProps) {
                       Profile
                     </Button>
                   </Link>
-                  <Link href="/settings/profile" className="block" onClick={() => setIsMenuOpen(false)}>
+                  <Link href={settingsUrl} className="block" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="outline" className="w-full gap-2 bg-transparent">
                       <FaCog className="w-4 h-4" />
                       Settings
