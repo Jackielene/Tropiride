@@ -12,6 +12,11 @@ import {
   FaTimes,
   FaCalendarAlt,
   FaCheckCircle,
+  FaCar,
+  FaUsers,
+  FaMotorcycle,
+  FaTruck,
+  FaBicycle,
 } from 'react-icons/fa';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import TropirideNavbar from '@/components/tropiride/TropirideNavbar';
@@ -216,6 +221,15 @@ async function geocodeLocation(query: string): Promise<Location | null> {
   }
 }
 
+// Vehicle pricing and capacity configuration (moved outside component to prevent re-creation)
+const vehicleConfig = {
+  'tricycle': { capacity: 3, dailyRate: 300, name: 'Tricycle' },
+  'tuktuk': { capacity: 4, dailyRate: 400, name: 'Tuk-Tuk' },
+  'habal-habal': { capacity: 2, dailyRate: 250, name: 'Habal-Habal' },
+  'multicab': { capacity: 8, dailyRate: 500, name: 'Multicab' },
+  'van': { capacity: 14, dailyRate: 700, name: 'Van' },
+};
+
 export default function TropirideVehicles() {
   const { flash } = usePage().props as any;
   const [pickupLocation, setPickupLocation] = useState<Location | null>(null);
@@ -250,8 +264,9 @@ export default function TropirideVehicles() {
   const [pickupTime, setPickupTime] = useState<string>('');
   const [returnDate, setReturnDate] = useState<string>('');
   const [returnTime, setReturnTime] = useState<string>('');
-  const [isRoundTrip, setIsRoundTrip] = useState(false);
   const [dateValidationError, setDateValidationError] = useState<string>('');
+  const [selectedVehicle, setSelectedVehicle] = useState<'tricycle' | 'tuktuk' | 'habal-habal' | 'multicab' | 'van'>('multicab');
+  const [passengerCount, setPassengerCount] = useState<number>(1);
   const pickupInputRef = useRef<HTMLInputElement>(null);
   const dropoffInputRef = useRef<HTMLInputElement>(null);
   const geocodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -259,7 +274,7 @@ export default function TropirideVehicles() {
 
   // Validate dates whenever they change
   useEffect(() => {
-    if (!isRoundTrip || !pickupDate || !returnDate) {
+    if (!pickupDate || !returnDate) {
       setDateValidationError('');
       return;
     }
@@ -276,14 +291,14 @@ export default function TropirideVehicles() {
     } else {
       setDateValidationError('');
     }
-  }, [isRoundTrip, pickupDate, pickupTime, returnDate, returnTime]);
+  }, [pickupDate, pickupTime, returnDate, returnTime]);
 
-  // Auto-detect location on mount - GPS automatically requested with high accuracy
+  // Auto-detect location on mount - GPS is optional
   useEffect(() => {
     setIsGettingLocation(true);
     
     if (navigator.geolocation) {
-      // Request high accuracy GPS location with improved options
+      // Request GPS location with relaxed settings
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude, accuracy } = position.coords;
@@ -314,8 +329,8 @@ export default function TropirideVehicles() {
           setIsGettingLocation(false);
         },
         (error) => {
-          console.error('GPS Error:', error);
-          // Use default Siargao location if GPS fails
+          // GPS failed or permission denied - silently fall back to default location
+          // This is expected behavior if user denies permission
           setPickupLocation({
             lat: SIARGAO_CENTER[0],
             lng: SIARGAO_CENTER[1],
@@ -323,50 +338,14 @@ export default function TropirideVehicles() {
           });
           setPickupInputValue('Siargao Island');
           setIsGettingLocation(false);
+          setGpsAccuracy(null);
         },
         {
-          enableHighAccuracy: true, // Use GPS if available
-          timeout: 15000, // Increased timeout for better accuracy
-          maximumAge: 0, // Don't use cached position
+          enableHighAccuracy: false, // Use network/WiFi positioning (faster, less battery)
+          timeout: 10000, // 10 second timeout
+          maximumAge: 60000, // Accept positions up to 1 minute old
         }
       );
-      
-      // Watch position for continuous updates (optional, more accurate)
-      const watchId = navigator.geolocation.watchPosition(
-        async (position) => {
-          const { latitude, longitude, accuracy } = position.coords;
-          setGpsAccuracy((prev) => {
-            // Only update if accuracy improves significantly (within 50m and 30% better)
-            if (accuracy < 50 && (!prev || accuracy < prev * 0.7)) {
-              reverseGeocode(latitude, longitude).then((address) => {
-                setPickupLocation({
-                  lat: latitude,
-                  lng: longitude,
-                  address: address
-                });
-                setPickupInputValue(address);
-                setMapCenter([latitude, longitude]);
-              });
-              return accuracy;
-            }
-            return prev || accuracy;
-          });
-        },
-        (error) => {
-          // Silent fail for watch position
-          console.warn('GPS watch error:', error);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 5000, // Accept positions up to 5 seconds old
-        }
-      );
-      
-      // Cleanup watch on unmount
-      return () => {
-        navigator.geolocation.clearWatch(watchId);
-      };
     } else {
       // Browser doesn't support geolocation
       setPickupLocation({
@@ -412,7 +391,7 @@ export default function TropirideVehicles() {
     }
   }, [pickupSuggestions, pickupLocation]);
 
-  // Calculate fare, distance, and time when both locations are set
+  // Calculate fare, distance, and time when both locations and dates are set
   useEffect(() => {
     if (pickupLocation && dropoffLocation) {
       // Simple calculation using Haversine formula for distance
@@ -432,11 +411,54 @@ export default function TropirideVehicles() {
       const estimatedTimeMinutes = calculateRealisticTravelTime(distance);
       setEstimatedTime(estimatedTimeMinutes);
       
-      // Calculate fare (base fare + per km rate)
-      // Base fare: ₱50, Per km: ₱15
-      const baseFare = 50;
-      const perKm = 15;
-      const fare = Math.round(baseFare + (distance * perKm));
+      // Calculate fare based on rental type (same-day vs multi-day)
+      let fare = 0;
+      
+      if (pickupDate && returnDate) {
+        // Calculate number of rental days
+        const pickup = new Date(pickupDate);
+        const returnD = new Date(returnDate);
+        const timeDiff = returnD.getTime() - pickup.getTime();
+        const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+        
+        // Check if it's a same-day rental (0 days difference or same date)
+        const isSameDay = daysDiff === 0 || pickup.toDateString() === returnD.toDateString();
+        
+        if (isSameDay) {
+          // Same-day rental: Calculate based on distance and vehicle type
+          // Per-km rates by vehicle type
+          const perKmRates: Record<string, { base: number, perKm: number }> = {
+            'habal-habal': { base: 20, perKm: 6 },
+            'tricycle': { base: 25, perKm: 8 },
+            'tuktuk': { base: 30, perKm: 10 },
+            'multicab': { base: 35, perKm: 10 },
+            'van': { base: 50, perKm: 12 },
+          };
+          
+          const rates = perKmRates[selectedVehicle];
+          fare = Math.round(rates.base + (distance * rates.perKm));
+          
+          // Add passenger surcharge if exceeding capacity
+          const vehicleCapacity = vehicleConfig[selectedVehicle].capacity;
+          if (passengerCount > vehicleCapacity) {
+            fare = Math.round(fare * 1.1);
+          }
+        } else {
+          // Multi-day rental: Calculate based on daily rate
+          const rentalDays = daysDiff;
+          const dailyRate = vehicleConfig[selectedVehicle].dailyRate;
+          
+          // Base calculation: daily rate × number of days
+          fare = dailyRate * rentalDays;
+          
+          // Add passenger surcharge if exceeding capacity
+          const vehicleCapacity = vehicleConfig[selectedVehicle].capacity;
+          if (passengerCount > vehicleCapacity) {
+            fare = Math.round(fare * 1.1);
+          }
+        }
+      }
+      
       setEstimatedFare(fare);
 
       // Center map between pickup and dropoff, or focus on pickup if it's the only one
@@ -460,7 +482,7 @@ export default function TropirideVehicles() {
       setEstimatedDistance(null);
       setEstimatedTime(null);
     }
-  }, [pickupLocation, dropoffLocation]);
+  }, [pickupLocation, dropoffLocation, selectedVehicle, pickupDate, returnDate, passengerCount]);
 
   const handleSetCurrentLocation = async () => {
     if (navigator.geolocation) {
@@ -494,16 +516,23 @@ export default function TropirideVehicles() {
           setIsGettingLocation(false);
           setIsReverseGeocoding(false);
         },
-        () => {
+        (error) => {
+          // GPS permission denied or unavailable
           setIsGettingLocation(false);
           setIsReverseGeocoding(false);
+          setGpsAccuracy(null);
+          
+          // Show user-friendly message
+          alert('Location access denied or unavailable. Please enter your location manually or click on the map.');
         },
         {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0,
+          enableHighAccuracy: false,
+          timeout: 10000,
+          maximumAge: 60000,
         }
       );
+    } else {
+      alert('Geolocation is not supported by your browser. Please enter your location manually.');
     }
   };
 
@@ -731,7 +760,9 @@ export default function TropirideVehicles() {
       distance_km: estimatedDistance,
       estimated_time_minutes: estimatedTime,
       pickup_date: pickupDate && pickupTime ? `${pickupDate} ${pickupTime}` : (pickupDate || null),
-      return_date: isRoundTrip && returnDate && returnTime ? `${returnDate} ${returnTime}` : (isRoundTrip && returnDate ? returnDate : null),
+      return_date: returnDate && returnTime ? `${returnDate} ${returnTime}` : (returnDate || null),
+      vehicle_type: selectedVehicle,
+      passengers: passengerCount,
     }, {
       preserveScroll: true,
       onSuccess: (page) => {
@@ -750,7 +781,6 @@ export default function TropirideVehicles() {
         setPickupTime('');
         setReturnDate('');
         setReturnTime('');
-        setIsRoundTrip(false);
       },
       onError: (errors) => {
         setIsRequesting(false);
@@ -914,6 +944,254 @@ export default function TropirideVehicles() {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Book a Ride</h2>
                 <p className="text-gray-600 text-sm">Enter your locations to get started</p>
+              </div>
+
+              {/* Vehicle Selection */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  <FaCar className="inline mr-2" />
+                  Choose Your Vehicle
+                </label>
+                <div className="space-y-2">
+                  {/* Habal-Habal */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedVehicle('habal-habal')}
+                    className={`cursor-pointer rounded-xl p-4 border-2 transition-all duration-200 ${
+                      selectedVehicle === 'habal-habal'
+                        ? 'border-cyan-500 bg-cyan-50 shadow-lg'
+                        : 'border-gray-200 bg-white hover:border-cyan-300 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-3 rounded-lg ${
+                          selectedVehicle === 'habal-habal' ? 'bg-cyan-500' : 'bg-gray-100'
+                        }`}>
+                          <FaMotorcycle className={`text-xl ${
+                            selectedVehicle === 'habal-habal' ? 'text-white' : 'text-gray-600'
+                          }`} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm text-gray-900">Habal-Habal</h3>
+                          <div className="flex items-center text-[10px] text-gray-500 space-x-1.5 mt-0.5">
+                            <span className="flex items-center">
+                              <FaUsers className="mr-0.5 text-[9px]" />
+                              {vehicleConfig['habal-habal'].capacity} pax
+                            </span>
+                            <span>•</span>
+                            <span className="font-medium text-cyan-600">₱{vehicleConfig['habal-habal'].dailyRate}/day</span>
+                          </div>
+                        </div>
+                      </div>
+                      {selectedVehicle === 'habal-habal' && (
+                        <FaCheckCircle className="text-cyan-500 text-xl" />
+                      )}
+                    </div>
+                  </motion.div>
+
+                  {/* Tricycle */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedVehicle('tricycle')}
+                    className={`cursor-pointer rounded-xl p-4 border-2 transition-all duration-200 ${
+                      selectedVehicle === 'tricycle'
+                        ? 'border-cyan-500 bg-cyan-50 shadow-lg'
+                        : 'border-gray-200 bg-white hover:border-cyan-300 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-3 rounded-lg ${
+                          selectedVehicle === 'tricycle' ? 'bg-cyan-500' : 'bg-gray-100'
+                        }`}>
+                          <FaBicycle className={`text-xl ${
+                            selectedVehicle === 'tricycle' ? 'text-white' : 'text-gray-600'
+                          }`} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm text-gray-900">Tricycle</h3>
+                          <div className="flex items-center text-[10px] text-gray-500 space-x-1.5 mt-0.5">
+                            <span className="flex items-center">
+                              <FaUsers className="mr-0.5 text-[9px]" />
+                              {vehicleConfig.tricycle.capacity} pax
+                            </span>
+                            <span>•</span>
+                            <span className="font-medium text-cyan-600">₱{vehicleConfig.tricycle.dailyRate}/day</span>
+                          </div>
+                        </div>
+                      </div>
+                      {selectedVehicle === 'tricycle' && (
+                        <FaCheckCircle className="text-cyan-500 text-xl" />
+                      )}
+                    </div>
+                  </motion.div>
+
+                  {/* Tuk-Tuk */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedVehicle('tuktuk')}
+                    className={`cursor-pointer rounded-xl p-4 border-2 transition-all duration-200 ${
+                      selectedVehicle === 'tuktuk'
+                        ? 'border-cyan-500 bg-cyan-50 shadow-lg'
+                        : 'border-gray-200 bg-white hover:border-cyan-300 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-3 rounded-lg ${
+                          selectedVehicle === 'tuktuk' ? 'bg-cyan-500' : 'bg-gray-100'
+                        }`}>
+                          <FaCar className={`text-xl ${
+                            selectedVehicle === 'tuktuk' ? 'text-white' : 'text-gray-600'
+                          }`} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm text-gray-900">Tuk-Tuk</h3>
+                          <div className="flex items-center text-[10px] text-gray-500 space-x-1.5 mt-0.5">
+                            <span className="flex items-center">
+                              <FaUsers className="mr-0.5 text-[9px]" />
+                              {vehicleConfig.tuktuk.capacity} pax
+                            </span>
+                            <span>•</span>
+                            <span className="font-medium text-cyan-600">₱{vehicleConfig.tuktuk.dailyRate}/day</span>
+                          </div>
+                        </div>
+                      </div>
+                      {selectedVehicle === 'tuktuk' && (
+                        <FaCheckCircle className="text-cyan-500 text-xl" />
+                      )}
+                    </div>
+                  </motion.div>
+
+                  {/* Multicab */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedVehicle('multicab')}
+                    className={`cursor-pointer rounded-xl p-4 border-2 transition-all duration-200 ${
+                      selectedVehicle === 'multicab'
+                        ? 'border-cyan-500 bg-cyan-50 shadow-lg'
+                        : 'border-gray-200 bg-white hover:border-cyan-300 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-3 rounded-lg ${
+                          selectedVehicle === 'multicab' ? 'bg-cyan-500' : 'bg-gray-100'
+                        }`}>
+                          <FaCar className={`text-xl ${
+                            selectedVehicle === 'multicab' ? 'text-white' : 'text-gray-600'
+                          }`} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm text-gray-900">Multicab</h3>
+                          <div className="flex items-center text-[10px] text-gray-500 space-x-1.5 mt-0.5">
+                            <span className="flex items-center">
+                              <FaUsers className="mr-0.5 text-[9px]" />
+                              {vehicleConfig.multicab.capacity} pax
+                            </span>
+                            <span>•</span>
+                            <span className="font-medium text-cyan-600">₱{vehicleConfig.multicab.dailyRate}/day</span>
+                          </div>
+                        </div>
+                      </div>
+                      {selectedVehicle === 'multicab' && (
+                        <FaCheckCircle className="text-cyan-500 text-xl" />
+                      )}
+                    </div>
+                  </motion.div>
+
+                  {/* Van */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setSelectedVehicle('van')}
+                    className={`cursor-pointer rounded-xl p-4 border-2 transition-all duration-200 ${
+                      selectedVehicle === 'van'
+                        ? 'border-cyan-500 bg-cyan-50 shadow-lg'
+                        : 'border-gray-200 bg-white hover:border-cyan-300 hover:shadow-md'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-3 rounded-lg ${
+                          selectedVehicle === 'van' ? 'bg-cyan-500' : 'bg-gray-100'
+                        }`}>
+                          <FaTruck className={`text-xl ${
+                            selectedVehicle === 'van' ? 'text-white' : 'text-gray-600'
+                          }`} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm text-gray-900">Van</h3>
+                          <div className="flex items-center text-[10px] text-gray-500 space-x-1.5 mt-0.5">
+                            <span className="flex items-center">
+                              <FaUsers className="mr-0.5 text-[9px]" />
+                              {vehicleConfig.van.capacity} pax
+                            </span>
+                            <span>•</span>
+                            <span className="font-medium text-cyan-600">₱{vehicleConfig.van.dailyRate}/day</span>
+                          </div>
+                        </div>
+                      </div>
+                      {selectedVehicle === 'van' && (
+                        <FaCheckCircle className="text-cyan-500 text-xl" />
+                      )}
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+
+              {/* Location Help Info */}
+              <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-3">
+                <p className="text-xs text-cyan-800">
+                  <strong>💡 How to select locations:</strong>
+                </p>
+                <ul className="text-xs text-cyan-700 mt-1 space-y-1 ml-4 list-disc">
+                  <li>Type in the search box to find places</li>
+                  <li>Click on the map to set location</li>
+                  <li>Use 📍 button for GPS (optional - permission may be required)</li>
+                </ul>
+              </div>
+
+              {/* Passenger Count */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <FaUsers className="inline mr-2" />
+                  Number of Passengers
+                </label>
+                <select
+                  value={passengerCount}
+                  onChange={(e) => setPassengerCount(parseInt(e.target.value))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white hover:border-cyan-300 shadow-sm"
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(num => (
+                    <option key={num} value={num}>
+                      {num} {num === 1 ? 'Passenger' : 'Passengers'}
+                    </option>
+                  ))}
+                </select>
+                {(() => {
+                  const vehicleCapacity = vehicleConfig[selectedVehicle].capacity;
+                  const vehicleName = vehicleConfig[selectedVehicle].name;
+                  
+                  if (passengerCount > vehicleCapacity) {
+                    return (
+                      <p className="mt-2 text-sm text-orange-600 font-medium">
+                        ⚠️ {vehicleName} typical capacity is {vehicleCapacity} passengers. Exceeding capacity will add 10% surcharge.
+                      </p>
+                    );
+                  } else {
+                    return (
+                      <p className="mt-2 text-sm text-green-600 font-medium">
+                        ✓ {vehicleName} can accommodate {passengerCount} passenger{passengerCount > 1 ? 's' : ''}
+                      </p>
+                    );
+                  }
+                })()}
               </div>
 
               {/* Pickup Location */}
@@ -1110,7 +1388,7 @@ export default function TropirideVehicles() {
               </div>
 
               {/* Estimation Card */}
-              {estimatedFare && estimatedDistance && estimatedTime && (
+              {estimatedFare && estimatedFare > 0 && estimatedDistance && estimatedTime && pickupDate && returnDate && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1153,11 +1431,53 @@ export default function TropirideVehicles() {
                           <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
                             <FaMoneyBillWave className="text-white" />
                           </div>
-                          <div>
+                          <div className="flex-1">
                             <p className="text-sm text-gray-600">Estimated Fare</p>
                             <p className="text-2xl font-black text-gray-900">
                               ₱{estimatedFare}
                             </p>
+                            {pickupDate && returnDate && estimatedDistance && (() => {
+                              const pickup = new Date(pickupDate);
+                              const returnD = new Date(returnDate);
+                              const timeDiff = returnD.getTime() - pickup.getTime();
+                              const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                              const isSameDay = daysDiff === 0 || pickup.toDateString() === returnD.toDateString();
+                              const vehicleCapacity = vehicleConfig[selectedVehicle].capacity;
+                              const vehicleName = vehicleConfig[selectedVehicle].name;
+                              const hasSurcharge = passengerCount > vehicleCapacity;
+                              
+                              if (isSameDay) {
+                                // Same-day pricing
+                                const perKmRates: Record<string, { base: number, perKm: number }> = {
+                                  'habal-habal': { base: 20, perKm: 6 },
+                                  'tricycle': { base: 25, perKm: 8 },
+                                  'tuktuk': { base: 30, perKm: 10 },
+                                  'multicab': { base: 35, perKm: 10 },
+                                  'van': { base: 50, perKm: 12 },
+                                };
+                                const rates = perKmRates[selectedVehicle];
+                                return (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {vehicleName} (Same-day): ₱{rates.base} base + ₱{rates.perKm}/km × {estimatedDistance.toFixed(2)}km
+                                    {hasSurcharge && ' + 10% surcharge'}
+                                  </p>
+                                );
+                              } else {
+                                // Multi-day pricing
+                                const dailyRate = vehicleConfig[selectedVehicle].dailyRate;
+                                return (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {vehicleName} (Multi-day): ₱{dailyRate}/day × {daysDiff} day{daysDiff > 1 ? 's' : ''}
+                                    {hasSurcharge && ' + 10% surcharge'}
+                                  </p>
+                                );
+                              }
+                            })()}
+                            {(!pickupDate || !returnDate) && (
+                              <p className="text-xs text-red-500 mt-1">
+                                Please select pickup and return dates
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1166,13 +1486,45 @@ export default function TropirideVehicles() {
                 </motion.div>
               )}
 
+              {/* Message when requirements not met */}
+              {(!pickupLocation || !dropoffLocation || !pickupDate || !returnDate || !estimatedFare || estimatedFare === 0) && (
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0">
+                      <FaCalendarAlt className="text-blue-600 text-xl mt-0.5" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-blue-900 mb-1">Rental Requirements</h4>
+                      <p className="text-sm text-blue-700 mb-2">
+                        To calculate your estimated fare, please provide:
+                      </p>
+                      <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
+                        <li className={pickupLocation ? "line-through opacity-60" : ""}>
+                          Pickup location {pickupLocation && "✓"}
+                        </li>
+                        <li className={dropoffLocation ? "line-through opacity-60" : ""}>
+                          Dropoff location {dropoffLocation && "✓"}
+                        </li>
+                        <li className={pickupDate ? "line-through opacity-60" : ""}>
+                          Pickup date {pickupDate && "✓"}
+                        </li>
+                        <li className={returnDate ? "line-through opacity-60" : ""}>
+                          Return date {returnDate && "✓"}
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Date Selection */}
               <div className="space-y-4">
                 {/* Pickup Date & Time */}
                 <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-4 border-2 border-cyan-100">
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
                     <FaCalendarAlt className="inline mr-2 text-cyan-600" />
-                    Pickup Schedule (Optional)
+                    Pickup Date {!pickupDate && <span className="text-red-500">*</span>}
+                    {pickupDate && <span className="ml-2 text-xs text-green-600 font-normal">✓ Set</span>}
                   </label>
                   
                   <div className="grid grid-cols-2 gap-3">
@@ -1211,38 +1563,12 @@ export default function TropirideVehicles() {
                   </p>
                 </div>
 
-                {/* Round Trip Checkbox */}
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <input
-                    type="checkbox"
-                    id="roundTrip"
-                    checked={isRoundTrip}
-                    onChange={(e) => {
-                      setIsRoundTrip(e.target.checked);
-                      if (!e.target.checked) {
-                        setReturnDate('');
-                        setReturnTime('');
-                      }
-                    }}
-                    className="w-5 h-5 text-cyan-600 border-gray-300 rounded focus:ring-cyan-500 cursor-pointer"
-                  />
-                  <label htmlFor="roundTrip" className="text-sm font-semibold text-gray-700 cursor-pointer flex items-center gap-2">
-                    <FaRoute className="text-orange-500" />
-                    Round Trip (Need Return Ride)
-                  </label>
-                </div>
-
-                {/* Return Date & Time */}
-                {isRoundTrip && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border-2 border-orange-100"
-                  >
+                {/* Return Date - Always visible for rental duration calculation */}
+                <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-4 border-2 border-orange-100">
                     <label className="block text-sm font-semibold text-gray-700 mb-3">
                       <FaCalendarAlt className="inline mr-2 text-orange-600" />
-                      Return Schedule
+                      Return Date {!returnDate && <span className="text-red-500">*</span>}
+                      {returnDate && <span className="ml-2 text-xs text-green-600 font-normal">✓ Set</span>}
                     </label>
                     
                     <div className="grid grid-cols-2 gap-3">
@@ -1285,8 +1611,7 @@ export default function TropirideVehicles() {
                         </p>
                       </div>
                     )}
-                  </motion.div>
-                )}
+                  </div>
               </div>
 
               {/* Request Ride Button */}
@@ -1294,9 +1619,9 @@ export default function TropirideVehicles() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleRequestRide}
-                disabled={!pickupLocation || !dropoffLocation || isRequesting || (isRoundTrip && !returnDate) || !!dateValidationError}
+                disabled={!pickupLocation || !dropoffLocation || !pickupDate || !returnDate || isRequesting || !!dateValidationError}
                 className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 ${
-                  pickupLocation && dropoffLocation && !isRequesting && (!isRoundTrip || returnDate) && !dateValidationError
+                  pickupLocation && dropoffLocation && pickupDate && returnDate && !isRequesting && !dateValidationError
                     ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:shadow-xl hover:shadow-cyan-500/50 cursor-pointer'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}

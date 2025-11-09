@@ -26,6 +26,8 @@ class RideRequestController extends Controller
             'estimated_time_minutes' => 'required|integer',
             'pickup_date' => 'nullable|date',
             'return_date' => 'nullable|date|after_or_equal:pickup_date',
+            'vehicle_type' => 'nullable|string|in:tricycle,tuktuk,habal-habal,multicab,van',
+            'passengers' => 'nullable|integer|min:1|max:14',
         ], [
             'return_date.after_or_equal' => 'Return date/time must be after or equal to pickup date/time.',
         ]);
@@ -98,10 +100,21 @@ class RideRequestController extends Controller
             $bookingData['total_amount'] = $validated['estimated_fare'];
         }
         
+        // Set vehicle_type if provided and column exists
+        if (isset($validated['vehicle_type']) && Schema::hasColumn('bookings', 'vehicle_type')) {
+            $bookingData['vehicle_type'] = $validated['vehicle_type'];
+        }
+        
+        // Set passengers if provided and column exists
+        if (isset($validated['passengers']) && Schema::hasColumn('bookings', 'passengers')) {
+            $bookingData['passengers'] = $validated['passengers'];
+        }
+        
         // Set other optional fields to null if they exist
         $optionalFields = [
             'pickup_time',
             'passengers',
+            'vehicle_type',
             'payment_method',
             'payment_status',
             'notes',

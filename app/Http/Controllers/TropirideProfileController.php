@@ -39,6 +39,8 @@ class TropirideProfileController extends Controller
                     'pickup_time' => $booking->pickup_time,
                     'return_date' => $booking->return_date,
                     'return_time' => $booking->return_time,
+                    'vehicle_type' => $booking->vehicle_type ?? null,
+                    'passengers' => $booking->passengers ?? null,
                 ];
             });
         

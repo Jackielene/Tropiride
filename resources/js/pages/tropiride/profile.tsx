@@ -24,6 +24,7 @@ import {
   FaCheck,
   FaTimesCircle,
   FaBan,
+  FaUsers,
 } from "react-icons/fa"
 import { usePage, Link } from "@inertiajs/react"
 import { Form } from "@inertiajs/react"
@@ -377,6 +378,8 @@ export default function TropirideProfile() {
         timeMinutes: Number(booking.estimated_time_minutes) || 0,
         pickupDate: pickupDisplay,
         returnDate: returnDisplay,
+        vehicleType: booking.vehicle_type || null,
+        passengers: booking.passengers || null,
       };
     } catch (error) {
       console.error('Error processing booking:', booking, error);
@@ -760,6 +763,36 @@ export default function TropirideProfile() {
                               </div>
                             </div>
                           </div>
+
+                          {/* Vehicle Type and Passengers */}
+                          {(booking.vehicleType || booking.passengers) && (
+                            <div className="grid md:grid-cols-2 gap-3 mb-3">
+                              {booking.vehicleType && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <FaCar className="text-blue-600" />
+                                  <div>
+                                    <p className="text-gray-600">Vehicle</p>
+                                    <p className="font-medium text-gray-900 capitalize">
+                                      {booking.vehicleType === 'habal-habal' ? 'Habal-Habal' : 
+                                       booking.vehicleType === 'tuktuk' ? 'Tuk-Tuk' : 
+                                       booking.vehicleType.charAt(0).toUpperCase() + booking.vehicleType.slice(1)}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                              {booking.passengers && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <FaUsers className="text-purple-600" />
+                                  <div>
+                                    <p className="text-gray-600">Passengers</p>
+                                    <p className="font-medium text-gray-900">
+                                      {booking.passengers} {booking.passengers === 1 ? 'person' : 'people'}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
 
                           {(booking.distance || booking.time) && (
                             <div className="grid md:grid-cols-2 gap-3 mb-3">

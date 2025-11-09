@@ -22,7 +22,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import PaymentHandler from '@/components/payments/PaymentHandler';
 
 interface BookingData {
-  vehicleType: 'multicab' | 'van' | null;
+  vehicleType: 'tricycle' | 'tuktuk' | 'habal-habal' | 'multicab' | 'van' | null;
   pickupDate: Date | null;
   returnDate: Date | null;
   pickupLocation: string;
@@ -37,11 +37,39 @@ interface BookingData {
 
 const vehicleOptions = [
   {
+    id: 'habal-habal',
+    name: 'Habal-Habal',
+    icon: FaCar,
+    capacity: '1-2 passengers',
+    maxCapacity: 2,
+    price: 250,
+    features: ['Motorcycle taxi', 'Quick and agile', 'Best for short trips']
+  },
+  {
+    id: 'tricycle',
+    name: 'Tricycle',
+    icon: FaCar,
+    capacity: '1-3 passengers',
+    maxCapacity: 3,
+    price: 300,
+    features: ['Covered seating', 'Local transportation', 'Good for city travel']
+  },
+  {
+    id: 'tuktuk',
+    name: 'Tuk-Tuk',
+    icon: FaCar,
+    capacity: '1-4 passengers',
+    maxCapacity: 4,
+    price: 400,
+    features: ['Open-air experience', 'Tourist favorite', 'Comfortable seating']
+  },
+  {
     id: 'multicab',
     name: 'Multicab',
     icon: FaCar,
     capacity: '6-8 passengers',
-    price: 800,
+    maxCapacity: 8,
+    price: 500,
     features: ['Air conditioning', 'Local driver', 'Insurance included']
   },
   {
@@ -49,7 +77,8 @@ const vehicleOptions = [
     name: 'Van',
     icon: FaTruck,
     capacity: '10-14 passengers',
-    price: 1200,
+    maxCapacity: 14,
+    price: 700,
     features: ['Air conditioning', 'Professional driver', 'Insurance included', 'Free water']
   }
 ];
@@ -90,7 +119,7 @@ export default function TropirideBooking() {
   const [currentStep, setCurrentStep] = useState(1);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [bookingData, setBookingData] = useState<BookingData>({
-    vehicleType: 'multicab', // Default vehicle type
+    vehicleType: null, // User must select a vehicle
     pickupDate: null,
     returnDate: null,
     pickupLocation: '',
@@ -158,12 +187,38 @@ export default function TropirideBooking() {
     const timeDiff = endDate.getTime() - startDate.getTime();
     const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
     
-    // For rental services, minimum charge is 1 day (even for same-day rentals)
-    const days = Math.max(1, daysDiff);
+    // Check if it's a same-day rental
+    const isSameDay = daysDiff === 0 || startDate.toDateString() === endDate.toDateString();
     
     const selectedVehicle = vehicleOptions.find(v => v.id === bookingData.vehicleType);
     if (!selectedVehicle) return 0;
-    return days * selectedVehicle.price;
+    
+    let total = 0;
+    
+    if (isSameDay) {
+      // Same-day rental: Use fixed rate (assumes average distance)
+      // Per-km rates by vehicle type for same-day trips
+      const sameDayRates: Record<string, number> = {
+        'habal-habal': 120,  // Estimated for average trip
+        'tricycle': 150,
+        'tuktuk': 180,
+        'multicab': 200,
+        'van': 300,
+      };
+      
+      total = sameDayRates[bookingData.vehicleType] || selectedVehicle.price;
+    } else {
+      // Multi-day rental: daily rate × number of days
+      total = daysDiff * selectedVehicle.price;
+    }
+    
+    // Add passenger surcharge if exceeding typical capacity
+    if (bookingData.passengers > selectedVehicle.maxCapacity) {
+      // 10% surcharge for exceeding capacity (requires special arrangement)
+      total = Math.round(total * 1.1);
+    }
+    
+    return total;
   };
 
   const handlePaymentSuccess = (completeBookingData: any) => {
@@ -215,13 +270,14 @@ export default function TropirideBooking() {
     switch (currentStep) {
       case 1:
         // Check if all required fields are filled
-        if (!bookingData.pickupDate || !bookingData.returnDate || !bookingData.pickupLocation.trim()) {
+        if (!bookingData.vehicleType || !bookingData.pickupDate || !bookingData.returnDate || !bookingData.pickupLocation.trim()) {
           return false;
         }
         // Check if return date is after pickup date
         if (bookingData.returnDate <= bookingData.pickupDate) {
           return false;
         }
+        // Allow exceeding capacity with surcharge (no need to block)
         return true;
       case 2:
         return bookingData.customerInfo.name.trim() !== '' && 
@@ -237,6 +293,7 @@ export default function TropirideBooking() {
   const getMissingFields = () => {
     if (currentStep === 1) {
       const missing = [];
+      if (!bookingData.vehicleType) missing.push('Vehicle Selection');
       if (!bookingData.pickupDate) missing.push('Pickup Date');
       if (!bookingData.returnDate) missing.push('Return Date');
       if (!bookingData.pickupLocation.trim()) missing.push('Pickup Location');
@@ -245,6 +302,8 @@ export default function TropirideBooking() {
       if (bookingData.pickupDate && bookingData.returnDate && bookingData.returnDate <= bookingData.pickupDate) {
         missing.push('Return date must be after pickup date');
       }
+      
+      // Note: Exceeding capacity adds surcharge but doesn't block booking
       
       return missing;
     }
@@ -326,95 +385,196 @@ export default function TropirideBooking() {
                   <p className="text-gray-600">Tell us your travel dates and pickup location</p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-6">
+                  {/* Vehicle Selection */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      <FaCalendarAlt className="inline mr-2" />
-                      Pickup Date
-                      {bookingData.pickupDate && (
-                        <span className="ml-2 text-green-600 text-xs">✓ Selected</span>
-                      )}
-                    </label>
-                    <div className={`w-full p-3 border rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all duration-200 ${
-                      bookingData.pickupDate 
-                        ? 'border-green-300 bg-green-50' 
-                        : 'border-gray-300'
-                    }`}>
-                      <DatePicker
-                        selected={bookingData.pickupDate}
-                        onChange={(date) => updateBookingData({ pickupDate: date })}
-                        minDate={new Date()}
-                        maxDate={new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)} // 1 year from now
-                        dateFormat="MMMM dd, yyyy"
-                        placeholderText="Select pickup date"
-                        className="w-full border-none outline-none bg-transparent text-gray-900 placeholder-gray-500 font-medium"
-                        showPopperArrow={false}
-                        popperClassName="react-datepicker-popper"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      <FaCalendarAlt className="inline mr-2" />
-                      Return Date
-                      {bookingData.returnDate && (
-                        <span className="ml-2 text-green-600 text-xs">✓ Selected</span>
-                      )}
-                    </label>
-                    <div className={`w-full p-3 border rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all duration-200 ${
-                      bookingData.returnDate 
-                        ? 'border-green-300 bg-green-50' 
-                        : 'border-gray-300'
-                    }`}>
-                      <DatePicker
-                        selected={bookingData.returnDate}
-                        onChange={(date) => updateBookingData({ returnDate: date })}
-                        minDate={bookingData.pickupDate || new Date()}
-                        maxDate={new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)} // 1 year from now
-                        dateFormat="MMMM dd, yyyy"
-                        placeholderText="Select return date"
-                        className="w-full border-none outline-none bg-transparent text-gray-900 placeholder-gray-500 font-medium"
-                        showPopperArrow={false}
-                        popperClassName="react-datepicker-popper"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      <FaMapMarkerAlt className="inline mr-2" />
-                      Pickup Location
+                      <FaCar className="inline mr-2" />
+                      Select Vehicle
                     </label>
                     <select
-                      value={bookingData.pickupLocation}
-                      onChange={(e) => updateBookingData({ pickupLocation: e.target.value })}
+                      value={bookingData.vehicleType || ''}
+                      onChange={(e) => updateBookingData({ vehicleType: e.target.value as 'multicab' | 'van' })}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white hover:border-blue-300 shadow-sm"
                     >
-                      <option value="" className="text-gray-500">Select pickup location</option>
-                      {locations.map((location) => (
-                        <option key={location} value={location} className="text-gray-900 bg-white">{location}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      <FaUsers className="inline mr-2" />
-                      Number of Passengers
-                    </label>
-                    <select
-                      value={bookingData.passengers}
-                      onChange={(e) => updateBookingData({ passengers: parseInt(e.target.value) })}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white hover:border-blue-300 shadow-sm"
-                    >
-                      {passengerOptions.map((option) => (
-                        <option key={option.value} value={option.value} className="text-gray-900 bg-white">
-                          {option.label}
+                      <option value="" disabled className="text-gray-500">Select a vehicle</option>
+                      {vehicleOptions.map((vehicle) => (
+                        <option key={vehicle.id} value={vehicle.id} className="text-gray-900 bg-white">
+                          {vehicle.name} - {vehicle.capacity} (₱{vehicle.price}/day)
                         </option>
                       ))}
                     </select>
+                    {bookingData.vehicleType && (
+                      <div className="mt-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        {(() => {
+                          const selectedVehicle = vehicleOptions.find(v => v.id === bookingData.vehicleType);
+                          if (!selectedVehicle) return null;
+                          return (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="font-semibold text-gray-900">{selectedVehicle.name}</span>
+                                <span className="text-blue-600 font-bold">₱{selectedVehicle.price}/day</span>
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                <FaUsers className="inline mr-1" />
+                                {selectedVehicle.capacity}
+                              </div>
+                              <div className="flex flex-wrap gap-2 mt-2">
+                                {selectedVehicle.features.map((feature, idx) => (
+                                  <span key={idx} className="text-xs px-2 py-1 bg-white rounded-full text-gray-700 border border-blue-200">
+                                    ✓ {feature}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
+
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <FaCalendarAlt className="inline mr-2" />
+                        Pickup Date
+                        {bookingData.pickupDate && (
+                          <span className="ml-2 text-green-600 text-xs">✓ Selected</span>
+                        )}
+                      </label>
+                      <div className={`w-full p-3 border rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all duration-200 ${
+                        bookingData.pickupDate 
+                          ? 'border-green-300 bg-green-50' 
+                          : 'border-gray-300'
+                      }`}>
+                        <DatePicker
+                          selected={bookingData.pickupDate}
+                          onChange={(date) => updateBookingData({ pickupDate: date })}
+                          minDate={new Date()}
+                          maxDate={new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)} // 1 year from now
+                          dateFormat="MMMM dd, yyyy"
+                          placeholderText="Select pickup date"
+                          className="w-full border-none outline-none bg-transparent text-gray-900 placeholder-gray-500 font-medium"
+                          showPopperArrow={false}
+                          popperClassName="react-datepicker-popper"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <FaCalendarAlt className="inline mr-2" />
+                        Return Date
+                        {bookingData.returnDate && (
+                          <span className="ml-2 text-green-600 text-xs">✓ Selected</span>
+                        )}
+                      </label>
+                      <div className={`w-full p-3 border rounded-lg focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-transparent transition-all duration-200 ${
+                        bookingData.returnDate 
+                          ? 'border-green-300 bg-green-50' 
+                          : 'border-gray-300'
+                      }`}>
+                        <DatePicker
+                          selected={bookingData.returnDate}
+                          onChange={(date) => updateBookingData({ returnDate: date })}
+                          minDate={bookingData.pickupDate || new Date()}
+                          maxDate={new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000)} // 1 year from now
+                          dateFormat="MMMM dd, yyyy"
+                          placeholderText="Select return date"
+                          className="w-full border-none outline-none bg-transparent text-gray-900 placeholder-gray-500 font-medium"
+                          showPopperArrow={false}
+                          popperClassName="react-datepicker-popper"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <FaMapMarkerAlt className="inline mr-2" />
+                        Pickup Location
+                      </label>
+                      <select
+                        value={bookingData.pickupLocation}
+                        onChange={(e) => updateBookingData({ pickupLocation: e.target.value })}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white hover:border-blue-300 shadow-sm"
+                      >
+                        <option value="" className="text-gray-500">Select pickup location</option>
+                        {locations.map((location) => (
+                          <option key={location} value={location} className="text-gray-900 bg-white">{location}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        <FaUsers className="inline mr-2" />
+                        Number of Passengers
+                      </label>
+                      <select
+                        value={bookingData.passengers}
+                        onChange={(e) => updateBookingData({ passengers: parseInt(e.target.value) })}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 bg-white hover:border-blue-300 shadow-sm"
+                      >
+                        {passengerOptions.map((option) => (
+                          <option key={option.value} value={option.value} className="text-gray-900 bg-white">
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                      {bookingData.vehicleType && bookingData.passengers && (
+                        <div className="mt-2 text-sm">
+                          {(() => {
+                            const selectedVehicle = vehicleOptions.find(v => v.id === bookingData.vehicleType);
+                            if (!selectedVehicle) return null;
+                            
+                            const maxCapacity = selectedVehicle.maxCapacity;
+                            if (bookingData.passengers > maxCapacity) {
+                              return (
+                                <p className="text-orange-600 font-medium">
+                                  ⚠ {selectedVehicle.name} typical capacity is {maxCapacity} passengers. Exceeding capacity will add 10% surcharge.
+                                </p>
+                              );
+                            } else {
+                              return (
+                                <p className="text-green-600 font-medium">
+                                  ✓ {selectedVehicle.name} can accommodate {bookingData.passengers} passenger{bookingData.passengers > 1 ? 's' : ''}
+                                </p>
+                              );
+                            }
+                          })()}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Estimated Fare Preview */}
+                  {bookingData.vehicleType && bookingData.pickupDate && bookingData.returnDate && (
+                    <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-600 mb-1">Estimated Fare</p>
+                          <p className="text-xs text-gray-500">
+                            {(() => {
+                              const timeDiff = bookingData.returnDate.getTime() - bookingData.pickupDate.getTime();
+                              const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                              const isSameDay = daysDiff === 0 || bookingData.pickupDate.toDateString() === bookingData.returnDate.toDateString();
+                              const selectedVehicle = vehicleOptions.find(v => v.id === bookingData.vehicleType);
+                              const hasSurcharge = selectedVehicle && bookingData.passengers > selectedVehicle.maxCapacity;
+                              
+                              if (isSameDay) {
+                                return `Same-day rental rate${hasSurcharge ? ' + 10% surcharge' : ''}`;
+                              } else {
+                                return `${daysDiff} day(s) × ₱${selectedVehicle?.price}/day${hasSurcharge ? ' + 10% surcharge' : ''}`;
+                              }
+                            })()}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-3xl font-bold text-blue-600">₱{calculateTotal().toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -630,37 +790,93 @@ export default function TropirideBooking() {
                         <div className="border-t pt-4 mt-4">
                           <h4 className="text-lg font-semibold text-gray-900 mb-3">Pricing Breakdown</h4>
                           
-                          {bookingData.pickupDate && bookingData.returnDate && bookingData.vehicleType && (
-                            <div className="space-y-2 bg-gray-50 rounded-lg p-4">
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Daily Rate:</span>
-                                <span className="font-medium">
-                                  ₱{vehicleOptions.find(v => v.id === bookingData.vehicleType)?.price}/day
-                                </span>
-                              </div>
-                              
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Duration:</span>
-                                <span className="font-medium">
-                                  {Math.max(1, Math.ceil((bookingData.returnDate.getTime() - bookingData.pickupDate.getTime()) / (1000 * 60 * 60 * 24)))} days
-                                </span>
-                              </div>
-                              
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Calculation:</span>
-                                <span className="font-medium">
-                                  ₱{vehicleOptions.find(v => v.id === bookingData.vehicleType)?.price} × {Math.max(1, Math.ceil((bookingData.returnDate.getTime() - bookingData.pickupDate.getTime()) / (1000 * 60 * 60 * 24)))} days
-                                </span>
-                              </div>
-                              
-                              <div className="border-t pt-2 mt-2">
-                                <div className="flex justify-between text-lg font-bold">
-                                  <span>Total:</span>
-                                  <span className="text-blue-600">₱{calculateTotal().toLocaleString()}</span>
+                          {bookingData.pickupDate && bookingData.returnDate && bookingData.vehicleType && (() => {
+                            const selectedVehicle = vehicleOptions.find(v => v.id === bookingData.vehicleType);
+                            const timeDiff = bookingData.returnDate.getTime() - bookingData.pickupDate.getTime();
+                            const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                            const isSameDay = daysDiff === 0 || bookingData.pickupDate.toDateString() === bookingData.returnDate.toDateString();
+                            const hasSurcharge = selectedVehicle && bookingData.passengers > selectedVehicle.maxCapacity;
+                            
+                            let baseTotal = 0;
+                            if (isSameDay) {
+                              const sameDayRates: Record<string, number> = {
+                                'habal-habal': 120,
+                                'tricycle': 150,
+                                'tuktuk': 180,
+                                'multicab': 200,
+                                'van': 300,
+                              };
+                              baseTotal = sameDayRates[bookingData.vehicleType] || 0;
+                            } else {
+                              baseTotal = selectedVehicle ? daysDiff * selectedVehicle.price : 0;
+                            }
+                            
+                            return (
+                              <div className="space-y-2 bg-gray-50 rounded-lg p-4">
+                                {isSameDay ? (
+                                  <>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-600">Rental Type:</span>
+                                      <span className="font-medium text-blue-600">Same-day</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-600">Vehicle:</span>
+                                      <span className="font-medium">{selectedVehicle?.name}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-600">Same-day Rate:</span>
+                                      <span className="font-medium">₱{baseTotal.toLocaleString()}</span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-600">Rental Type:</span>
+                                      <span className="font-medium text-green-600">Multi-day</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-600">Daily Rate:</span>
+                                      <span className="font-medium">₱{selectedVehicle?.price}/day</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-600">Duration:</span>
+                                      <span className="font-medium">{daysDiff} day{daysDiff > 1 ? 's' : ''}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                      <span className="text-gray-600">Subtotal:</span>
+                                      <span className="font-medium">
+                                        ₱{selectedVehicle?.price} × {daysDiff} = ₱{baseTotal.toLocaleString()}
+                                      </span>
+                                    </div>
+                                  </>
+                                )}
+                                
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600">Passengers:</span>
+                                  <span className="font-medium">
+                                    {bookingData.passengers} passenger{bookingData.passengers > 1 ? 's' : ''}
+                                    {hasSurcharge && ` (exceeds ${selectedVehicle.maxCapacity} capacity)`}
+                                  </span>
+                                </div>
+                                
+                                {hasSurcharge && (
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-orange-600">Capacity Surcharge (10%):</span>
+                                    <span className="font-medium text-orange-600">
+                                      + ₱{Math.round(baseTotal * 0.1).toLocaleString()}
+                                    </span>
+                                  </div>
+                                )}
+                                
+                                <div className="border-t pt-2 mt-2">
+                                  <div className="flex justify-between text-lg font-bold">
+                                    <span>Total:</span>
+                                    <span className="text-blue-600">₱{calculateTotal().toLocaleString()}</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          )}
+                            );
+                          })()}
                           
                           {(!bookingData.pickupDate || !bookingData.returnDate || !bookingData.vehicleType) && (
                             <div className="text-gray-500 text-sm italic">

@@ -78,6 +78,7 @@ class AdminDashboardController extends Controller
                     'pickup_date',
                     'pickup_time',
                     'passengers',
+                    'vehicle_type',
                     'payment_status'
                 ])
                 ->map(function ($booking) {
@@ -102,6 +103,7 @@ class AdminDashboardController extends Controller
                         'pickup_date' => $booking->pickup_date,
                         'pickup_time' => $booking->pickup_time,
                         'passengers' => $booking->passengers,
+                        'vehicle_type' => $booking->vehicle_type,
                         'payment_status' => $booking->payment_status,
                     ];
                 });
@@ -129,6 +131,7 @@ class AdminDashboardController extends Controller
                     'return_date',
                     'return_time',
                     'passengers',
+                    'vehicle_type',
                     'payment_status'
                 ])
                 ->map(function ($booking) {
@@ -155,6 +158,7 @@ class AdminDashboardController extends Controller
                         'return_date' => $booking->return_date,
                         'return_time' => $booking->return_time,
                         'passengers' => $booking->passengers,
+                        'vehicle_type' => $booking->vehicle_type,
                         'payment_status' => $booking->payment_status,
                     ];
                 });

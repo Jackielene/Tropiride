@@ -139,6 +139,7 @@ interface Booking {
     return_date?: string;
     return_time?: string;
     passengers?: number;
+    vehicle_type?: string;
     payment_status?: string;
 }
 
@@ -325,6 +326,7 @@ export default function AdminDashboard({
                                         <tr>
                                             <th className="text-left p-4 font-semibold text-sm">Customer</th>
                                             <th className="text-left p-4 font-semibold text-sm">Route</th>
+                                            <th className="text-left p-4 font-semibold text-sm">Vehicle</th>
                                             <th className="text-left p-4 font-semibold text-sm">Schedule</th>
                                             <th className="text-left p-4 font-semibold text-sm">Amount</th>
                                             <th className="text-left p-4 font-semibold text-sm">Status</th>
@@ -365,6 +367,17 @@ export default function AdminDashboard({
                                                         </div>
                                                         {booking.distance_km && (
                                                             <p className="text-xs text-muted-foreground ml-5">{booking.distance_km} km</p>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="space-y-1">
+                                                        {booking.vehicle_type ? (
+                                                            <Badge variant="outline" className="text-xs capitalize">
+                                                                {booking.vehicle_type}
+                                                            </Badge>
+                                                        ) : (
+                                                            <span className="text-xs text-muted-foreground">Not specified</span>
                                                         )}
                                                     </div>
                                                 </td>

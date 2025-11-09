@@ -37,6 +37,8 @@ export interface Booking {
     pickup_time?: string | null;
     return_date?: string | null;
     return_time?: string | null;
+    vehicle_type?: string | null;
+    passengers?: number | null;
 }
 
 export interface SharedData {

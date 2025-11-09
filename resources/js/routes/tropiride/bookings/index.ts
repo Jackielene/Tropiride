@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../wayfinder'
 /**
 * @see \App\Http\Controllers\RideRequestController::cancel
- * @see app/Http/Controllers/RideRequestController.php:139
+ * @see app/Http/Controllers/RideRequestController.php:152
  * @route '/tropiride/bookings/{id}/cancel'
  */
 export const cancel = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -16,7 +16,7 @@ cancel.definition = {
 
 /**
 * @see \App\Http\Controllers\RideRequestController::cancel
- * @see app/Http/Controllers/RideRequestController.php:139
+ * @see app/Http/Controllers/RideRequestController.php:152
  * @route '/tropiride/bookings/{id}/cancel'
  */
 cancel.url = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -44,7 +44,7 @@ cancel.url = (args: { id: string | number } | [id: string | number ] | string | 
 
 /**
 * @see \App\Http\Controllers\RideRequestController::cancel
- * @see app/Http/Controllers/RideRequestController.php:139
+ * @see app/Http/Controllers/RideRequestController.php:152
  * @route '/tropiride/bookings/{id}/cancel'
  */
 cancel.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -54,7 +54,7 @@ cancel.post = (args: { id: string | number } | [id: string | number ] | string |
 
     /**
 * @see \App\Http\Controllers\RideRequestController::cancel
- * @see app/Http/Controllers/RideRequestController.php:139
+ * @see app/Http/Controllers/RideRequestController.php:152
  * @route '/tropiride/bookings/{id}/cancel'
  */
     const cancelForm = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -64,7 +64,7 @@ cancel.post = (args: { id: string | number } | [id: string | number ] | string |
 
             /**
 * @see \App\Http\Controllers\RideRequestController::cancel
- * @see app/Http/Controllers/RideRequestController.php:139
+ * @see app/Http/Controllers/RideRequestController.php:152
  * @route '/tropiride/bookings/{id}/cancel'
  */
         cancelForm.post = (args: { id: string | number } | [id: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
