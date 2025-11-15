@@ -59,7 +59,7 @@ export interface User {
     address?: string;
     avatar?: string;
     avatar_url?: string;
-    role: 'customer' | 'driver';
+    role: 'customer' | 'driver' | 'admin';
     email_verified_at: string | null;
     two_factor_enabled?: boolean;
     created_at: string;

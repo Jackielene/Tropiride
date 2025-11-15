@@ -1,5 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -639,249 +639,134 @@ export default function DriverDashboard({
                     />
                 </div>
 
-                {/* Available Bookings - Main Focus */}
-                {availableBookings.length > 0 && (
-                    <Card className="shadow-lg">
-                        <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
-                            <CardTitle className="flex items-center gap-3 text-xl">
-                                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                                    <Package className="h-5 w-5 text-green-600 dark:text-green-400" />
-                                </div>
-                                Available Rides
-                            </CardTitle>
-                            <CardDescription>
-                                New ride requests ready for you to accept
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-muted/30">
-                                        <tr>
-                                            <th className="text-left p-4 font-semibold text-sm">Customer</th>
-                                            <th className="text-left p-4 font-semibold text-sm">Route</th>
-                                            <th className="text-left p-4 font-semibold text-sm">Vehicle</th>
-                                            <th className="text-left p-4 font-semibold text-sm">Schedule</th>
-                                            <th className="text-left p-4 font-semibold text-sm">Fare</th>
-                                            <th className="text-left p-4 font-semibold text-sm">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {availableBookings.map((booking) => (
-                                            <tr key={booking.id} className="border-b hover:bg-accent/50 transition-colors">
-                                                <td className="p-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <Avatar className="h-10 w-10 border-2">
-                                                            <AvatarImage src={booking.customer?.email ? `https://ui-avatars.com/api/?name=${encodeURIComponent(booking.customer.name)}&background=0ea5e9&color=fff` : undefined} />
-                                                            <AvatarFallback>{getInitials(booking.customer?.name || 'Unknown')}</AvatarFallback>
-                                                        </Avatar>
-                                                        <div>
-                                                            <p className="font-medium text-sm">{booking.customer?.name || 'Unknown'}</p>
-                                                            <p className="text-xs text-muted-foreground">{booking.customer?.phone}</p>
+                <div className="space-y-6">
+                    {/* Available Bookings - Main Focus */}
+                    {availableBookings.length > 0 && (
+                        <Card className="shadow-lg">
+                            <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
+                                <CardTitle className="flex items-center gap-3 text-xl">
+                                    <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                                        <Package className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                    </div>
+                                    Available Rides
+                                </CardTitle>
+                                <CardDescription>
+                                    New ride requests ready for you to accept
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-muted/30">
+                                            <tr>
+                                                <th className="text-left p-4 font-semibold text-sm">Customer</th>
+                                                <th className="text-left p-4 font-semibold text-sm">Route</th>
+                                                <th className="text-left p-4 font-semibold text-sm">Vehicle</th>
+                                                <th className="text-left p-4 font-semibold text-sm">Schedule</th>
+                                                <th className="text-left p-4 font-semibold text-sm">Fare</th>
+                                                <th className="text-left p-4 font-semibold text-sm">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {availableBookings.map((booking) => (
+                                                <tr key={booking.id} className="border-b hover:bg-accent/50 transition-colors">
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <Avatar className="h-10 w-10 border-2">
+                                                                <AvatarImage src={booking.customer?.email ? `https://ui-avatars.com/api/?name=${encodeURIComponent(booking.customer.name)}&background=0ea5e9&color=fff` : undefined} />
+                                                                <AvatarFallback>{getInitials(booking.customer?.name || 'Unknown')}</AvatarFallback>
+                                                            </Avatar>
+                                                            <div>
+                                                                <p className="font-medium text-sm">{booking.customer?.name || 'Unknown'}</p>
+                                                                <p className="text-xs text-muted-foreground">{booking.customer?.phone}</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td className="p-4">
-                                                    <div className="space-y-1">
-                                                        <div className="flex items-start gap-2 max-w-xs">
-                                                            <MapPin className="h-3 w-3 text-green-600 mt-0.5 flex-shrink-0" />
-                                                            <p className="text-sm truncate">{booking.pickup_location}</p>
-                                                        </div>
-                                                        <div className="flex items-start gap-2 max-w-xs">
-                                                            <MapPin className="h-3 w-3 text-red-600 mt-0.5 flex-shrink-0" />
-                                                            <p className="text-sm truncate text-muted-foreground">{booking.dropoff_location}</p>
-                                                        </div>
-                                                        {booking.distance_km && (
-                                                            <p className="text-xs text-muted-foreground ml-5">{booking.distance_km} km</p>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="p-4">
-                                                    {booking.vehicle_type && (
-                                                        <Badge variant="outline" className="text-xs capitalize">
-                                                            {booking.vehicle_type}
-                                                        </Badge>
-                                                    )}
-                                                    {booking.passengers && (
-                                                        <p className="text-xs text-muted-foreground mt-1">
-                                                            {booking.passengers} pax
-                                                        </p>
-                                                    )}
-                                                </td>
-                                                <td className="p-4">
-                                                    {booking.pickup_date && (
-                                                        <div className="text-sm">
-                                                            <p className="font-medium">
-                                                                {new Date(booking.pickup_date).toLocaleDateString('en-US', {
-                                                                    month: 'short',
-                                                                    day: 'numeric',
-                                                                })}
-                                                            </p>
-                                                            {booking.pickup_time && (
-                                                                <p className="text-xs text-muted-foreground">{booking.pickup_time}</p>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="space-y-1">
+                                                            <div className="flex items-start gap-2 max-w-xs">
+                                                                <MapPin className="h-3 w-3 text-green-600 mt-0.5 flex-shrink-0" />
+                                                                <p className="text-sm truncate">{booking.pickup_location}</p>
+                                                            </div>
+                                                            <div className="flex items-start gap-2 max-w-xs">
+                                                                <MapPin className="h-3 w-3 text-red-600 mt-0.5 flex-shrink-0" />
+                                                                <p className="text-sm truncate text-muted-foreground">{booking.dropoff_location}</p>
+                                                            </div>
+                                                            {booking.distance_km && (
+                                                                <p className="text-xs text-muted-foreground ml-5">{booking.distance_km} km</p>
                                                             )}
                                                         </div>
-                                                    )}
-                                                </td>
-                                                <td className="p-4">
-                                                    <span className="font-semibold text-green-600">
-                                                        {formatCurrency(booking.total_amount || booking.estimated_fare || 0)}
-                                                    </span>
-                                                </td>
-                                                <td className="p-4">
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() => handleAcceptBooking(booking.id)}
-                                                        disabled={isAccepting === booking.id}
-                                                    >
-                                                        {isAccepting === booking.id ? 'Accepting...' : 'Accept'}
-                                                    </Button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        {booking.vehicle_type && (
+                                                            <Badge variant="outline" className="text-xs capitalize">
+                                                                {booking.vehicle_type}
+                                                            </Badge>
+                                                        )}
+                                                        {booking.passengers && (
+                                                            <p className="text-xs text-muted-foreground mt-1">
+                                                                {booking.passengers} pax
+                                                            </p>
+                                                        )}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        {booking.pickup_date && (
+                                                            <div className="text-sm">
+                                                                <p className="font-medium">
+                                                                    {new Date(booking.pickup_date).toLocaleDateString('en-US', {
+                                                                        month: 'short',
+                                                                        day: 'numeric',
+                                                                    })}
+                                                                </p>
+                                                                {booking.pickup_time && (
+                                                                    <p className="text-xs text-muted-foreground">{booking.pickup_time}</p>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className="font-semibold text-green-600">
+                                                            {formatCurrency(booking.total_amount || booking.estimated_fare || 0)}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={() => handleAcceptBooking(booking.id)}
+                                                            disabled={isAccepting === booking.id}
+                                                        >
+                                                            {isAccepting === booking.id ? 'Accepting...' : 'Accept'}
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    <Card className="shadow-md border border-dashed border-primary/40 bg-primary/5">
+                        <CardContent className="flex flex-col gap-3 py-6 md:flex-row md:items-center md:justify-between">
+                            <div>
+                                <p className="text-sm font-semibold text-primary">Assigned rides</p>
+                                <p className="text-lg font-bold">
+                                    {assignedBookings.length}{' '}
+                                    <span className="font-normal text-muted-foreground">
+                                        ride{assignedBookings.length === 1 ? '' : 's'} waiting for updates
+                                    </span>
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    Review and update statuses in the dedicated My Rides view.
+                                </p>
                             </div>
+                            <Button asChild>
+                                <Link href="/driver/rides">Open My Rides</Link>
+                            </Button>
                         </CardContent>
                     </Card>
-                )}
-
-                {/* Assigned Bookings */}
-                <Card className="shadow-lg">
-                    <CardHeader className="border-b bg-gradient-to-r from-background to-muted/20">
-                        <CardTitle className="flex items-center gap-3 text-xl">
-                            <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                                <Car className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            My Rides
-                        </CardTitle>
-                        <CardDescription>
-                            Your assigned bookings and their current status
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        {assignedBookings.length > 0 ? (
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="bg-muted/30">
-                                        <tr>
-                                            <th className="text-left p-4 font-semibold text-sm">Customer</th>
-                                            <th className="text-left p-4 font-semibold text-sm">Route</th>
-                                            <th className="text-left p-4 font-semibold text-sm">Vehicle</th>
-                                            <th className="text-left p-4 font-semibold text-sm">Schedule</th>
-                                            <th className="text-left p-4 font-semibold text-sm">Fare</th>
-                                            <th className="text-left p-4 font-semibold text-sm">Status</th>
-                                            <th className="text-left p-4 font-semibold text-sm">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {assignedBookings.map((booking) => (
-                                            <tr key={booking.id} className="border-b hover:bg-accent/50 transition-colors">
-                                                <td className="p-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <Avatar className="h-10 w-10 border-2">
-                                                            <AvatarImage src={booking.customer?.email ? `https://ui-avatars.com/api/?name=${encodeURIComponent(booking.customer.name)}&background=0ea5e9&color=fff` : undefined} />
-                                                            <AvatarFallback>{getInitials(booking.customer?.name || 'Unknown')}</AvatarFallback>
-                                                        </Avatar>
-                                                        <div>
-                                                            <p className="font-medium text-sm">{booking.customer?.name || 'Unknown'}</p>
-                                                            <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                                                <Phone className="h-3 w-3" />
-                                                                {booking.customer?.phone}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="p-4">
-                                                    <div className="space-y-1">
-                                                        <div className="flex items-start gap-2 max-w-xs">
-                                                            <MapPin className="h-3 w-3 text-green-600 mt-0.5 flex-shrink-0" />
-                                                            <p className="text-sm truncate">{booking.pickup_location}</p>
-                                                        </div>
-                                                        <div className="flex items-start gap-2 max-w-xs">
-                                                            <MapPin className="h-3 w-3 text-red-600 mt-0.5 flex-shrink-0" />
-                                                            <p className="text-sm truncate text-muted-foreground">{booking.dropoff_location}</p>
-                                                        </div>
-                                                        {booking.distance_km && (
-                                                            <p className="text-xs text-muted-foreground ml-5">{booking.distance_km} km</p>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="p-4">
-                                                    {booking.vehicle_type && (
-                                                        <Badge variant="outline" className="text-xs capitalize">
-                                                            {booking.vehicle_type}
-                                                        </Badge>
-                                                    )}
-                                                    {booking.passengers && (
-                                                        <p className="text-xs text-muted-foreground mt-1">
-                                                            {booking.passengers} pax
-                                                        </p>
-                                                    )}
-                                                </td>
-                                                <td className="p-4">
-                                                    {booking.pickup_date && (
-                                                        <div className="text-sm">
-                                                            <p className="font-medium">
-                                                                {new Date(booking.pickup_date).toLocaleDateString('en-US', {
-                                                                    month: 'short',
-                                                                    day: 'numeric',
-                                                                    year: 'numeric'
-                                                                })}
-                                                            </p>
-                                                            {booking.pickup_time && (
-                                                                <p className="text-xs text-muted-foreground">{booking.pickup_time}</p>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td className="p-4">
-                                                    <span className="font-semibold">
-                                                        {formatCurrency(booking.total_amount || booking.estimated_fare || 0)}
-                                                    </span>
-                                                </td>
-                                                <td className="p-4">
-                                                    <Badge variant={getStatusBadgeVariant(booking.status)} className="text-xs">
-                                                        {booking.status}
-                                                    </Badge>
-                                                </td>
-                                                <td className="p-4">
-                                                    <div className="flex gap-2">
-                                                        {booking.status === 'pending' && (
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                onClick={() => handleUpdateStatus(booking.id, 'in_progress')}
-                                                                disabled={isUpdating === booking.id}
-                                                            >
-                                                                Start
-                                                            </Button>
-                                                        )}
-                                                        {booking.status === 'in_progress' && (
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => handleUpdateStatus(booking.id, 'completed')}
-                                                                disabled={isUpdating === booking.id}
-                                                            >
-                                                                Complete
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : (
-                            <div className="text-center py-16">
-                                <Car className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                                <p className="text-muted-foreground font-medium">No assigned rides yet</p>
-                                <p className="text-sm text-muted-foreground mt-1">Accept available rides to start earning</p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                </div>
             </div>
         </AppLayout>
     );

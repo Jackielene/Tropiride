@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../wayfinder'
 /**
- * @see routes/web.php:202
+ * @see routes/web.php:204
  * @route '/admin/debug-data'
  */
 export const data = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ data.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:202
+ * @see routes/web.php:204
  * @route '/admin/debug-data'
  */
 data.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ data.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:202
+ * @see routes/web.php:204
  * @route '/admin/debug-data'
  */
 data.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -30,7 +30,7 @@ data.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:202
+ * @see routes/web.php:204
  * @route '/admin/debug-data'
  */
 data.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -39,7 +39,7 @@ data.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:202
+ * @see routes/web.php:204
  * @route '/admin/debug-data'
  */
     const dataForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -48,7 +48,7 @@ data.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:202
+ * @see routes/web.php:204
  * @route '/admin/debug-data'
  */
         dataForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -56,7 +56,7 @@ data.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:202
+ * @see routes/web.php:204
  * @route '/admin/debug-data'
  */
         dataForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

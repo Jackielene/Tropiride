@@ -1,5 +1,6 @@
 import Auth from './Auth'
 import TropirideProfileController from './TropirideProfileController'
+import ChatController from './ChatController'
 import RideRequestController from './RideRequestController'
 import AdminDashboardController from './AdminDashboardController'
 import VerificationController from './VerificationController'
@@ -11,6 +12,7 @@ import Admin from './Admin'
 const Controllers = {
     Auth: Object.assign(Auth, Auth),
 TropirideProfileController: Object.assign(TropirideProfileController, TropirideProfileController),
+ChatController: Object.assign(ChatController, ChatController),
 RideRequestController: Object.assign(RideRequestController, RideRequestController),
 AdminDashboardController: Object.assign(AdminDashboardController, AdminDashboardController),
 VerificationController: Object.assign(VerificationController, VerificationController),

@@ -4,7 +4,7 @@ import booking99ab18 from './booking'
 import ride from './ride'
 import bookings743b13 from './bookings'
 /**
- * @see routes/web.php:32
+ * @see routes/web.php:33
  * @route '/tropiride'
  */
 export const landing = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -18,7 +18,7 @@ landing.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:32
+ * @see routes/web.php:33
  * @route '/tropiride'
  */
 landing.url = (options?: RouteQueryOptions) => {
@@ -26,7 +26,7 @@ landing.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:32
+ * @see routes/web.php:33
  * @route '/tropiride'
  */
 landing.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ landing.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:32
+ * @see routes/web.php:33
  * @route '/tropiride'
  */
 landing.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -43,7 +43,7 @@ landing.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:32
+ * @see routes/web.php:33
  * @route '/tropiride'
  */
     const landingForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -52,7 +52,7 @@ landing.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:32
+ * @see routes/web.php:33
  * @route '/tropiride'
  */
         landingForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -60,7 +60,7 @@ landing.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:32
+ * @see routes/web.php:33
  * @route '/tropiride'
  */
         landingForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -75,7 +75,7 @@ landing.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     landing.form = landingForm
 /**
- * @see routes/web.php:36
+ * @see routes/web.php:37
  * @route '/tropiride/about'
  */
 export const about = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -89,7 +89,7 @@ about.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:36
+ * @see routes/web.php:37
  * @route '/tropiride/about'
  */
 about.url = (options?: RouteQueryOptions) => {
@@ -97,7 +97,7 @@ about.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:36
+ * @see routes/web.php:37
  * @route '/tropiride/about'
  */
 about.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -105,7 +105,7 @@ about.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:36
+ * @see routes/web.php:37
  * @route '/tropiride/about'
  */
 about.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -114,7 +114,7 @@ about.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:36
+ * @see routes/web.php:37
  * @route '/tropiride/about'
  */
     const aboutForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -123,7 +123,7 @@ about.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:36
+ * @see routes/web.php:37
  * @route '/tropiride/about'
  */
         aboutForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -131,7 +131,7 @@ about.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:36
+ * @see routes/web.php:37
  * @route '/tropiride/about'
  */
         aboutForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -146,7 +146,7 @@ about.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     about.form = aboutForm
 /**
- * @see routes/web.php:40
+ * @see routes/web.php:41
  * @route '/tropiride/contact'
  */
 export const contact = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -160,7 +160,7 @@ contact.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:40
+ * @see routes/web.php:41
  * @route '/tropiride/contact'
  */
 contact.url = (options?: RouteQueryOptions) => {
@@ -168,7 +168,7 @@ contact.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:40
+ * @see routes/web.php:41
  * @route '/tropiride/contact'
  */
 contact.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -176,7 +176,7 @@ contact.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:40
+ * @see routes/web.php:41
  * @route '/tropiride/contact'
  */
 contact.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -185,7 +185,7 @@ contact.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:40
+ * @see routes/web.php:41
  * @route '/tropiride/contact'
  */
     const contactForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -194,7 +194,7 @@ contact.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:40
+ * @see routes/web.php:41
  * @route '/tropiride/contact'
  */
         contactForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -202,7 +202,7 @@ contact.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:40
+ * @see routes/web.php:41
  * @route '/tropiride/contact'
  */
         contactForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -217,7 +217,7 @@ contact.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     contact.form = contactForm
 /**
- * @see routes/web.php:44
+ * @see routes/web.php:45
  * @route '/tropiride/faq'
  */
 export const faq = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -231,7 +231,7 @@ faq.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:44
+ * @see routes/web.php:45
  * @route '/tropiride/faq'
  */
 faq.url = (options?: RouteQueryOptions) => {
@@ -239,7 +239,7 @@ faq.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:44
+ * @see routes/web.php:45
  * @route '/tropiride/faq'
  */
 faq.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -247,7 +247,7 @@ faq.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:44
+ * @see routes/web.php:45
  * @route '/tropiride/faq'
  */
 faq.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -256,7 +256,7 @@ faq.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:44
+ * @see routes/web.php:45
  * @route '/tropiride/faq'
  */
     const faqForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -265,7 +265,7 @@ faq.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:44
+ * @see routes/web.php:45
  * @route '/tropiride/faq'
  */
         faqForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -273,7 +273,7 @@ faq.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:44
+ * @see routes/web.php:45
  * @route '/tropiride/faq'
  */
         faqForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -288,7 +288,7 @@ faq.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     faq.form = faqForm
 /**
- * @see routes/web.php:48
+ * @see routes/web.php:49
  * @route '/tropiride/privacy'
  */
 export const privacy = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -302,7 +302,7 @@ privacy.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:48
+ * @see routes/web.php:49
  * @route '/tropiride/privacy'
  */
 privacy.url = (options?: RouteQueryOptions) => {
@@ -310,7 +310,7 @@ privacy.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:48
+ * @see routes/web.php:49
  * @route '/tropiride/privacy'
  */
 privacy.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -318,7 +318,7 @@ privacy.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:48
+ * @see routes/web.php:49
  * @route '/tropiride/privacy'
  */
 privacy.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -327,7 +327,7 @@ privacy.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:48
+ * @see routes/web.php:49
  * @route '/tropiride/privacy'
  */
     const privacyForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -336,7 +336,7 @@ privacy.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:48
+ * @see routes/web.php:49
  * @route '/tropiride/privacy'
  */
         privacyForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -344,7 +344,7 @@ privacy.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:48
+ * @see routes/web.php:49
  * @route '/tropiride/privacy'
  */
         privacyForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -359,7 +359,7 @@ privacy.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     privacy.form = privacyForm
 /**
- * @see routes/web.php:52
+ * @see routes/web.php:53
  * @route '/tropiride/terms'
  */
 export const terms = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -373,7 +373,7 @@ terms.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:52
+ * @see routes/web.php:53
  * @route '/tropiride/terms'
  */
 terms.url = (options?: RouteQueryOptions) => {
@@ -381,7 +381,7 @@ terms.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:52
+ * @see routes/web.php:53
  * @route '/tropiride/terms'
  */
 terms.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -389,7 +389,7 @@ terms.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:52
+ * @see routes/web.php:53
  * @route '/tropiride/terms'
  */
 terms.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -398,7 +398,7 @@ terms.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:52
+ * @see routes/web.php:53
  * @route '/tropiride/terms'
  */
     const termsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -407,7 +407,7 @@ terms.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:52
+ * @see routes/web.php:53
  * @route '/tropiride/terms'
  */
         termsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -415,7 +415,7 @@ terms.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:52
+ * @see routes/web.php:53
  * @route '/tropiride/terms'
  */
         termsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -508,7 +508,85 @@ profile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     profile.form = profileForm
 /**
- * @see routes/web.php:104
+* @see \App\Http\Controllers\ChatController::messages
+ * @see app/Http/Controllers/ChatController.php:14
+ * @route '/tropiride/messages'
+ */
+export const messages = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: messages.url(options),
+    method: 'get',
+})
+
+messages.definition = {
+    methods: ["get","head"],
+    url: '/tropiride/messages',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\ChatController::messages
+ * @see app/Http/Controllers/ChatController.php:14
+ * @route '/tropiride/messages'
+ */
+messages.url = (options?: RouteQueryOptions) => {
+    return messages.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ChatController::messages
+ * @see app/Http/Controllers/ChatController.php:14
+ * @route '/tropiride/messages'
+ */
+messages.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: messages.url(options),
+    method: 'get',
+})
+/**
+* @see \App\Http\Controllers\ChatController::messages
+ * @see app/Http/Controllers/ChatController.php:14
+ * @route '/tropiride/messages'
+ */
+messages.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: messages.url(options),
+    method: 'head',
+})
+
+    /**
+* @see \App\Http\Controllers\ChatController::messages
+ * @see app/Http/Controllers/ChatController.php:14
+ * @route '/tropiride/messages'
+ */
+    const messagesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        action: messages.url(options),
+        method: 'get',
+    })
+
+            /**
+* @see \App\Http\Controllers\ChatController::messages
+ * @see app/Http/Controllers/ChatController.php:14
+ * @route '/tropiride/messages'
+ */
+        messagesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: messages.url(options),
+            method: 'get',
+        })
+            /**
+* @see \App\Http\Controllers\ChatController::messages
+ * @see app/Http/Controllers/ChatController.php:14
+ * @route '/tropiride/messages'
+ */
+        messagesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+            action: messages.url({
+                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+                            _method: 'HEAD',
+                            ...(options?.query ?? options?.mergeQuery ?? {}),
+                        }
+                    }),
+            method: 'get',
+        })
+    
+    messages.form = messagesForm
+/**
+ * @see routes/web.php:106
  * @route '/tropiride/vehicles'
  */
 export const vehicles = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -522,7 +600,7 @@ vehicles.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:104
+ * @see routes/web.php:106
  * @route '/tropiride/vehicles'
  */
 vehicles.url = (options?: RouteQueryOptions) => {
@@ -530,7 +608,7 @@ vehicles.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:104
+ * @see routes/web.php:106
  * @route '/tropiride/vehicles'
  */
 vehicles.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -538,7 +616,7 @@ vehicles.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:104
+ * @see routes/web.php:106
  * @route '/tropiride/vehicles'
  */
 vehicles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -547,7 +625,7 @@ vehicles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:104
+ * @see routes/web.php:106
  * @route '/tropiride/vehicles'
  */
     const vehiclesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -556,7 +634,7 @@ vehicles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:104
+ * @see routes/web.php:106
  * @route '/tropiride/vehicles'
  */
         vehiclesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -564,7 +642,7 @@ vehicles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:104
+ * @see routes/web.php:106
  * @route '/tropiride/vehicles'
  */
         vehiclesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -579,7 +657,7 @@ vehicles.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     vehicles.form = vehiclesForm
 /**
- * @see routes/web.php:109
+ * @see routes/web.php:111
  * @route '/tropiride/booking'
  */
 export const booking = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -593,7 +671,7 @@ booking.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:109
+ * @see routes/web.php:111
  * @route '/tropiride/booking'
  */
 booking.url = (options?: RouteQueryOptions) => {
@@ -601,7 +679,7 @@ booking.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:109
+ * @see routes/web.php:111
  * @route '/tropiride/booking'
  */
 booking.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -609,7 +687,7 @@ booking.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:109
+ * @see routes/web.php:111
  * @route '/tropiride/booking'
  */
 booking.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -618,7 +696,7 @@ booking.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:109
+ * @see routes/web.php:111
  * @route '/tropiride/booking'
  */
     const bookingForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -627,7 +705,7 @@ booking.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:109
+ * @see routes/web.php:111
  * @route '/tropiride/booking'
  */
         bookingForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -635,7 +713,7 @@ booking.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:109
+ * @see routes/web.php:111
  * @route '/tropiride/booking'
  */
         bookingForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -728,7 +806,7 @@ bookings.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     bookings.form = bookingsForm
 /**
- * @see routes/web.php:142
+ * @see routes/web.php:144
  * @route '/tropiride/confirmation'
  */
 export const confirmation = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -742,7 +820,7 @@ confirmation.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:142
+ * @see routes/web.php:144
  * @route '/tropiride/confirmation'
  */
 confirmation.url = (options?: RouteQueryOptions) => {
@@ -750,7 +828,7 @@ confirmation.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:142
+ * @see routes/web.php:144
  * @route '/tropiride/confirmation'
  */
 confirmation.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -758,7 +836,7 @@ confirmation.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:142
+ * @see routes/web.php:144
  * @route '/tropiride/confirmation'
  */
 confirmation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -767,7 +845,7 @@ confirmation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:142
+ * @see routes/web.php:144
  * @route '/tropiride/confirmation'
  */
     const confirmationForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -776,7 +854,7 @@ confirmation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:142
+ * @see routes/web.php:144
  * @route '/tropiride/confirmation'
  */
         confirmationForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -784,7 +862,7 @@ confirmation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:142
+ * @see routes/web.php:144
  * @route '/tropiride/confirmation'
  */
         confirmationForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -806,6 +884,7 @@ faq: Object.assign(faq, faq),
 privacy: Object.assign(privacy, privacy),
 terms: Object.assign(terms, terms),
 profile: Object.assign(profile, profile937a89),
+messages: Object.assign(messages, messages),
 vehicles: Object.assign(vehicles, vehicles),
 booking: Object.assign(booking, booking99ab18),
 ride: Object.assign(ride, ride),

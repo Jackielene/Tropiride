@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Booking extends Model
 {
@@ -37,6 +38,7 @@ class Booking extends Model
         'notes',
         'special_requests',
         'total_amount',
+        'chat_thread_id',
     ];
 
     protected $casts = [
@@ -53,6 +55,26 @@ class Booking extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function driver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'driver_id');
+    }
+
+    public function chatMessages(): HasMany
+    {
+        return $this->hasMany(ChatMessage::class, 'booking_id');
+    }
+
+    public function chatThread(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'chat_thread_id');
+    }
+
+    public function childChats(): HasMany
+    {
+        return $this->hasMany(self::class, 'chat_thread_id');
     }
 }
 

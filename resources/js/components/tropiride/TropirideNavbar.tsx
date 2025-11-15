@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
-import { FaCar, FaBars, FaTimes, FaUser, FaSignOutAlt, FaCog } from "react-icons/fa"
+import { FaCar, FaBars, FaTimes, FaUser, FaSignOutAlt, FaCog, FaComments } from "react-icons/fa"
 import { Link, usePage } from "@inertiajs/react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -20,9 +20,11 @@ export default function TropirideNavbar({ activeLink }: TropirideNavbarProps) {
   const isAuthenticated = auth.user && auth.user.id
   
   // Determine settings URL based on user role
+  const isCustomer = auth.user?.role === 'customer'
   const settingsUrl = auth.user?.role === 'driver' 
     ? '/driver/settings/profile' 
     : '/settings/profile'
+  const messagesUrl = '/tropiride/messages'
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -195,6 +197,18 @@ export default function TropirideNavbar({ activeLink }: TropirideNavbarProps) {
                           </div>
                           <span className="font-medium">My Profile</span>
                       </Link>
+                      {isCustomer && (
+                        <Link
+                          href={messagesUrl}
+                          className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 hover:text-cyan-700 transition-all duration-200 group/item"
+                          onClick={() => setIsProfileDropdownOpen(false)}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center mr-3 group-hover/item:bg-cyan-200 transition-colors">
+                            <FaComments className="w-4 h-4 text-blue-600" />
+                          </div>
+                          <span className="font-medium">Messages</span>
+                        </Link>
+                      )}
                       <Link
                         href={settingsUrl}
                           className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 hover:text-cyan-700 transition-all duration-200 group/item"
@@ -309,6 +323,14 @@ export default function TropirideNavbar({ activeLink }: TropirideNavbarProps) {
                       Profile
                     </Button>
                   </Link>
+                  {isCustomer && (
+                    <Link href={messagesUrl} className="block" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" className="w-full gap-2 bg-white text-black border-gray-300 hover:bg-gray-50 hover:border-gray-400 cursor-pointer">
+                        <FaComments className="w-4 h-4" />
+                        Messages
+                      </Button>
+                    </Link>
+                  )}
                   <Link href={settingsUrl} className="block" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="outline" className="w-full gap-2 bg-transparent">
                       <FaCog className="w-4 h-4" />

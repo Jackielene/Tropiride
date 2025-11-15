@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\DB;
 
 class DriverDashboardController extends Controller
 {
@@ -18,130 +19,8 @@ class DriverDashboardController extends Controller
     {
         try {
             $driver = auth()->user();
-            
-            // Get driver's assigned bookings
-            $assignedBookings = Booking::with('user:id,name,email,phone')
-                ->where('driver_id', $driver->id)
-                ->orderBy('created_at', 'desc')
-                ->get([
-                    'id',
-                    'user_id',
-                    'driver_id',
-                    'pickup_location',
-                    'dropoff_location',
-                    'pickup_lat',
-                    'pickup_lng',
-                    'dropoff_lat',
-                    'dropoff_lng',
-                    'status',
-                    'estimated_fare',
-                    'total_amount',
-                    'distance_km',
-                    'created_at',
-                    'updated_at',
-                    'requested_at',
-                    'pickup_date',
-                    'pickup_time',
-                    'return_date',
-                    'return_time',
-                    'passengers',
-                    'vehicle_type',
-                    'payment_status',
-                    'notes',
-                    'special_requests'
-                ])
-                ->map(function ($booking) {
-                    return [
-                        'id' => $booking->id,
-                        'user_id' => $booking->user_id,
-                        'driver_id' => $booking->driver_id,
-                        'customer' => $booking->user ? [
-                            'id' => $booking->user->id,
-                            'name' => $booking->user->name,
-                            'email' => $booking->user->email,
-                            'phone' => $booking->user->phone ?? 'Not provided',
-                        ] : null,
-                        'pickup_location' => $booking->pickup_location,
-                        'dropoff_location' => $booking->dropoff_location,
-                        'pickup_lat' => $booking->pickup_lat,
-                        'pickup_lng' => $booking->pickup_lng,
-                        'dropoff_lat' => $booking->dropoff_lat,
-                        'dropoff_lng' => $booking->dropoff_lng,
-                        'status' => $booking->status,
-                        'estimated_fare' => $booking->estimated_fare,
-                        'total_amount' => $booking->total_amount,
-                        'distance_km' => $booking->distance_km,
-                        'created_at' => $booking->created_at->toISOString(),
-                        'updated_at' => $booking->updated_at->toISOString(),
-                        'requested_at' => $booking->requested_at ? $booking->requested_at->toISOString() : null,
-                        'pickup_date' => $booking->pickup_date,
-                        'pickup_time' => $booking->pickup_time,
-                        'return_date' => $booking->return_date,
-                        'return_time' => $booking->return_time,
-                        'passengers' => $booking->passengers,
-                        'vehicle_type' => $booking->vehicle_type,
-                        'payment_status' => $booking->payment_status,
-                        'notes' => $booking->notes,
-                        'special_requests' => $booking->special_requests,
-                    ];
-                });
-            
-            // Get available bookings ONLY if driver is verified
-            $availableBookings = collect([]);
-            
-            if ($driver->isVerified()) {
-                $availableBookings = Booking::with('user:id,name,email,phone')
-                    ->where('status', 'pending')
-                    ->whereNull('driver_id')
-                    ->orderBy('created_at', 'desc')
-                    ->limit(20)
-                    ->get([
-                        'id',
-                        'user_id',
-                        'pickup_location',
-                        'dropoff_location',
-                        'pickup_lat',
-                        'pickup_lng',
-                        'dropoff_lat',
-                        'dropoff_lng',
-                        'status',
-                        'estimated_fare',
-                        'total_amount',
-                        'distance_km',
-                        'created_at',
-                        'pickup_date',
-                        'pickup_time',
-                        'passengers',
-                        'vehicle_type',
-                    ])
-                    ->map(function ($booking) {
-                        return [
-                            'id' => $booking->id,
-                            'user_id' => $booking->user_id,
-                            'customer' => $booking->user ? [
-                                'id' => $booking->user->id,
-                                'name' => $booking->user->name,
-                                'email' => $booking->user->email,
-                                'phone' => $booking->user->phone ?? 'Not provided',
-                            ] : null,
-                            'pickup_location' => $booking->pickup_location,
-                            'dropoff_location' => $booking->dropoff_location,
-                            'pickup_lat' => $booking->pickup_lat,
-                            'pickup_lng' => $booking->pickup_lng,
-                            'dropoff_lat' => $booking->dropoff_lat,
-                            'dropoff_lng' => $booking->dropoff_lng,
-                            'status' => $booking->status,
-                            'estimated_fare' => $booking->estimated_fare,
-                            'total_amount' => $booking->total_amount,
-                            'distance_km' => $booking->distance_km,
-                            'created_at' => $booking->created_at->toISOString(),
-                            'pickup_date' => $booking->pickup_date,
-                            'pickup_time' => $booking->pickup_time,
-                            'passengers' => $booking->passengers,
-                            'vehicle_type' => $booking->vehicle_type,
-                        ];
-                    });
-            }
+            $assignedBookings = $this->getAssignedBookings($driver);
+            $availableBookings = $driver->isVerified() ? $this->getAvailableBookings() : collect([]);
             
             // Calculate driver statistics
             $totalRides = $assignedBookings->count();
@@ -254,22 +133,57 @@ class DriverDashboardController extends Controller
     public function acceptBooking(Request $request, $bookingId)
     {
         try {
-            $booking = Booking::findOrFail($bookingId);
-            
-            // Check if booking is still available
-            if ($booking->driver_id !== null) {
+            $driver = auth()->user();
+
+            DB::transaction(function () use ($bookingId, $driver) {
+                $booking = Booking::lockForUpdate()->findOrFail($bookingId);
+
+                if ($booking->driver_id !== null) {
+                    throw new \RuntimeException('assigned');
+                }
+
+                if ($booking->status !== 'pending') {
+                    throw new \RuntimeException('unavailable');
+                }
+
+                $booking->driver_id = $driver->id;
+
+                $existingThread = Booking::where('user_id', $booking->user_id)
+                    ->where('driver_id', $driver->id)
+                    ->where('id', '!=', $booking->id)
+                    ->orderBy('created_at')
+                    ->first();
+
+                if ($existingThread) {
+                    $booking->chat_thread_id = $existingThread->chat_thread_id ?? $existingThread->id;
+                }
+
+                $booking->save();
+
+                if (!$booking->chat_thread_id) {
+                    $booking->chat_thread_id = $booking->id;
+                    $booking->save();
+                }
+
+                $chatBooking = $booking->chat_thread_id === $booking->id
+                    ? $booking
+                    : Booking::findOrFail($booking->chat_thread_id);
+
+                $this->sendAcceptanceMessage($chatBooking, $driver, $booking);
+            });
+
+            return back()->with('success', 'Booking accepted successfully! You can now see it in your assigned rides.');
+        } catch (\RuntimeException $exception) {
+            if ($exception->getMessage() === 'assigned') {
                 return back()->with('error', 'This booking has already been assigned to another driver.');
             }
-            
-            if ($booking->status !== 'pending') {
+
+            if ($exception->getMessage() === 'unavailable') {
                 return back()->with('error', 'This booking is no longer available.');
             }
-            
-            // Assign the driver
-            $booking->driver_id = auth()->id();
-            $booking->save();
-            
-            return back()->with('success', 'Booking accepted successfully! You can now see it in your assigned rides.');
+
+            \Log::error('Accept Booking Error: ' . $exception->getMessage());
+            return back()->with('error', 'Failed to accept booking. Please try again.');
         } catch (\Exception $e) {
             \Log::error('Accept Booking Error: ' . $e->getMessage());
             return back()->with('error', 'Failed to accept booking. Please try again.');
@@ -301,6 +215,172 @@ class DriverDashboardController extends Controller
             \Log::error('Update Booking Status Error: ' . $e->getMessage());
             return back()->with('error', 'Failed to update booking status. Please try again.');
         }
+    }
+    public function rides(): Response
+    {
+        $driver = auth()->user();
+
+        return Inertia::render('driver/rides', [
+            'assignedBookings' => $this->getAssignedBookings($driver),
+            'driver' => [
+                'id' => $driver->id,
+                'name' => $driver->name,
+            ],
+        ]);
+    }
+
+    protected function getAssignedBookings(User $driver): Collection
+    {
+        return Booking::with('user:id,name,email,phone')
+            ->where('driver_id', $driver->id)
+            ->orderBy('created_at', 'desc')
+            ->get([
+                'id',
+                'user_id',
+                'driver_id',
+                'pickup_location',
+                'dropoff_location',
+                'pickup_lat',
+                'pickup_lng',
+                'dropoff_lat',
+                'dropoff_lng',
+                'status',
+                'estimated_fare',
+                'total_amount',
+                'distance_km',
+                'created_at',
+                'updated_at',
+                'requested_at',
+                'pickup_date',
+                'pickup_time',
+                'return_date',
+                'return_time',
+                'passengers',
+                'vehicle_type',
+                'payment_status',
+                'notes',
+                'special_requests'
+            ])
+            ->map(function ($booking) {
+                return [
+                    'id' => $booking->id,
+                    'user_id' => $booking->user_id,
+                    'driver_id' => $booking->driver_id,
+                    'customer' => $booking->user ? [
+                        'id' => $booking->user->id,
+                        'name' => $booking->user->name,
+                        'email' => $booking->user->email,
+                        'phone' => $booking->user->phone ?? 'Not provided',
+                    ] : null,
+                    'pickup_location' => $booking->pickup_location,
+                    'dropoff_location' => $booking->dropoff_location,
+                    'pickup_lat' => $booking->pickup_lat,
+                    'pickup_lng' => $booking->pickup_lng,
+                    'dropoff_lat' => $booking->dropoff_lat,
+                    'dropoff_lng' => $booking->dropoff_lng,
+                    'status' => $booking->status,
+                    'estimated_fare' => $booking->estimated_fare,
+                    'total_amount' => $booking->total_amount,
+                    'distance_km' => $booking->distance_km,
+                    'created_at' => $booking->created_at->toISOString(),
+                    'updated_at' => $booking->updated_at->toISOString(),
+                    'requested_at' => $booking->requested_at ? $booking->requested_at->toISOString() : null,
+                    'pickup_date' => $booking->pickup_date,
+                    'pickup_time' => $booking->pickup_time,
+                    'return_date' => $booking->return_date,
+                    'return_time' => $booking->return_time,
+                    'passengers' => $booking->passengers,
+                    'vehicle_type' => $booking->vehicle_type,
+                    'payment_status' => $booking->payment_status,
+                    'notes' => $booking->notes,
+                    'special_requests' => $booking->special_requests,
+                ];
+            });
+    }
+
+    protected function getAvailableBookings(): Collection
+    {
+        return Booking::with('user:id,name,email,phone')
+            ->where('status', 'pending')
+            ->whereNull('driver_id')
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get([
+                'id',
+                'user_id',
+                'pickup_location',
+                'dropoff_location',
+                'pickup_lat',
+                'pickup_lng',
+                'dropoff_lat',
+                'dropoff_lng',
+                'status',
+                'estimated_fare',
+                'total_amount',
+                'distance_km',
+                'created_at',
+                'pickup_date',
+                'pickup_time',
+                'passengers',
+                'vehicle_type',
+            ])
+            ->map(function ($booking) {
+                return [
+                    'id' => $booking->id,
+                    'user_id' => $booking->user_id,
+                    'customer' => $booking->user ? [
+                        'id' => $booking->user->id,
+                        'name' => $booking->user->name,
+                        'email' => $booking->user->email,
+                        'phone' => $booking->user->phone ?? 'Not provided',
+                    ] : null,
+                    'pickup_location' => $booking->pickup_location,
+                    'dropoff_location' => $booking->dropoff_location,
+                    'pickup_lat' => $booking->pickup_lat,
+                    'pickup_lng' => $booking->pickup_lng,
+                    'dropoff_lat' => $booking->dropoff_lat,
+                    'dropoff_lng' => $booking->dropoff_lng,
+                    'status' => $booking->status,
+                    'estimated_fare' => $booking->estimated_fare,
+                    'total_amount' => $booking->total_amount,
+                    'distance_km' => $booking->distance_km,
+                    'created_at' => $booking->created_at->toISOString(),
+                    'pickup_date' => $booking->pickup_date,
+                    'pickup_time' => $booking->pickup_time,
+                    'passengers' => $booking->passengers,
+                    'vehicle_type' => $booking->vehicle_type,
+                ];
+            });
+    }
+
+    protected function sendAcceptanceMessage(Booking $chatBooking, User $driver, ?Booking $currentBooking = null): void
+    {
+        $chatBooking->loadMissing('user');
+
+        $customerName = $chatBooking->user?->name ?? 'there';
+        $ageText = $driver->age ? "{$driver->age} years old" : 'not specified';
+        $addressText = $driver->address ?: 'not specified';
+        $bookingRef = $currentBooking ?? $chatBooking;
+        $routeDetails = $bookingRef->pickup_location && $bookingRef->dropoff_location
+            ? "Pickup: {$bookingRef->pickup_location} → Drop-off: {$bookingRef->dropoff_location}."
+            : '';
+
+        $messageBody = sprintf(
+            'Hello %s, I\'m %s and I just accepted your latest Tropiride ride request (Booking #%s). I will be your driver for this trip. Here are my details — Age: %s, Address: %s. %s Feel free to message me here if you have special instructions or questions.',
+            $customerName,
+            $driver->name,
+            $bookingRef->id,
+            $ageText,
+            $addressText,
+            $routeDetails
+        );
+
+        $chatBooking->chatMessages()->create([
+            'sender_id' => $driver->id,
+            'sender_role' => 'driver',
+            'message' => $messageBody,
+            'is_system' => true,
+        ]);
     }
 }
 

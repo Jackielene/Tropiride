@@ -12,7 +12,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, ShieldCheck, Settings, Car } from 'lucide-react';
+import { LayoutGrid, ShieldCheck, Settings, Car, MessageSquare, ClipboardList } from 'lucide-react';
 import AppLogo from './app-logo';
 
 export function AppSidebar() {
@@ -45,6 +45,16 @@ export function AppSidebar() {
             title: 'Driver Dashboard',
             href: '/driver/dashboard',
             icon: Car,
+        },
+        {
+            title: 'My Rides',
+            href: '/driver/rides',
+            icon: ClipboardList,
+        },
+        {
+            title: 'Messages',
+            href: '/driver/messages',
+            icon: MessageSquare,
         },
         {
             title: 'Settings',

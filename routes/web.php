@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\ChatController;
 
 // Home route - redirects authenticated users based on role
 Route::get('/', function () {
@@ -57,6 +58,7 @@ Route::get('/tropiride/terms', function () {
 Route::middleware(['auth', 'customer'])->get('/tropiride/profile', [App\Http\Controllers\TropirideProfileController::class, 'show'])->name('tropiride.profile');
 Route::middleware(['auth', 'customer'])->patch('/tropiride/profile', [App\Http\Controllers\TropirideProfileController::class, 'update'])->name('tropiride.profile.update');
 Route::middleware(['auth', 'customer'])->post('/tropiride/profile/avatar', [App\Http\Controllers\TropirideProfileController::class, 'updateAvatar'])->name('tropiride.profile.avatar');
+Route::middleware(['auth', 'customer'])->get('/tropiride/messages', [ChatController::class, 'index'])->name('tropiride.messages');
 
 // Debug route for avatar testing
 Route::middleware('auth')->get('/debug/avatar', function () {
@@ -230,6 +232,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 Route::middleware(['auth', 'driver'])->prefix('driver')->name('driver.')->group(function () {
     // Dashboard accessible without verification (to complete profile)
     Route::get('/dashboard', [App\Http\Controllers\DriverDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/rides', [App\Http\Controllers\DriverDashboardController::class, 'rides'])->name('rides');
+    Route::get('/messages', [ChatController::class, 'driverIndex'])->name('messages');
     
     // Debug route to check driver data
     Route::get('/debug', function () {
@@ -270,6 +274,11 @@ Route::middleware(['auth', 'driver'])->prefix('driver')->name('driver.')->group(
     // These routes require driver verification
     Route::middleware('verified')->post('/bookings/{bookingId}/accept', [App\Http\Controllers\DriverDashboardController::class, 'acceptBooking'])->name('booking.accept');
     Route::middleware('verified')->patch('/bookings/{bookingId}/status', [App\Http\Controllers\DriverDashboardController::class, 'updateBookingStatus'])->name('booking.status');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/chat/bookings/{booking}/messages', [ChatController::class, 'messages'])->name('chat.messages');
+    Route::post('/chat/bookings/{booking}/messages', [ChatController::class, 'store'])->name('chat.messages.store');
 });
 
 require __DIR__.'/settings.php';

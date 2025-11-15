@@ -83,7 +83,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     dashboard.form = dashboardForm
 /**
- * @see routes/web.php:190
+ * @see routes/web.php:192
  * @route '/admin/debug'
  */
 export const debug = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ debug.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:190
+ * @see routes/web.php:192
  * @route '/admin/debug'
  */
 debug.url = (options?: RouteQueryOptions) => {
@@ -105,7 +105,7 @@ debug.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:190
+ * @see routes/web.php:192
  * @route '/admin/debug'
  */
 debug.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -113,7 +113,7 @@ debug.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:190
+ * @see routes/web.php:192
  * @route '/admin/debug'
  */
 debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:190
+ * @see routes/web.php:192
  * @route '/admin/debug'
  */
     const debugForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -131,7 +131,7 @@ debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:190
+ * @see routes/web.php:192
  * @route '/admin/debug'
  */
         debugForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -139,7 +139,7 @@ debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:190
+ * @see routes/web.php:192
  * @route '/admin/debug'
  */
         debugForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
