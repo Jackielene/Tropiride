@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { MessageSquare, Loader2, MapPin, Phone } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { SharedData } from '@/types';
+import api from '@/lib/axios';
 
 interface DriverCustomer {
     id: number;
@@ -55,10 +56,7 @@ export default function DriverMessages({ bookings = [], initialBookingId }: Driv
     const [isSending, setIsSending] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const messagesRef = useRef<HTMLDivElement | null>(null);
-    const csrfToken =
-        typeof document !== 'undefined'
-            ? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-            : '';
+    
 
     const activeBooking = useMemo(() => {
         if (!activeBookingId) return null;
@@ -73,39 +71,27 @@ export default function DriverMessages({ bookings = [], initialBookingId }: Driv
 
         let isCurrent = true;
 
-        const loadMessages = (silent = false) => {
+        const loadMessages = async (silent = false) => {
             if (!silent) {
                 setIsLoading(true);
                 setError(null);
             }
 
-            fetch(`/chat/bookings/${activeBookingId}/messages`, {
-                headers: {
-                    Accept: 'application/json',
-                },
-                credentials: 'same-origin',
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load messages');
-                    }
-                    return response.json();
-                })
-                .then((data) => {
-                    if (!isCurrent) return;
-                    setMessages(data.messages ?? []);
-                })
-                .catch((err) => {
-                    console.error(err);
-                    if (!isCurrent) return;
-                    if (!silent) {
-                        setError('Unable to load messages. Please try again.');
-                    }
-                })
-                .finally(() => {
-                    if (!isCurrent || silent) return;
+            try {
+                const response = await api.get(`/chat/bookings/${activeBookingId}/messages`);
+                if (!isCurrent) return;
+                setMessages(response.data.messages ?? []);
+            } catch (err) {
+                console.error(err);
+                if (!isCurrent) return;
+                if (!silent) {
+                    setError('Unable to load messages. Please try again.');
+                }
+            } finally {
+                if (isCurrent && !silent) {
                     setIsLoading(false);
-                });
+                }
+            }
         };
 
         loadMessages();
@@ -145,25 +131,12 @@ export default function DriverMessages({ bookings = [], initialBookingId }: Driv
         setError(null);
 
         try {
-            const response = await fetch(`/chat/bookings/${activeBookingId}/messages`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({ message: trimmed }),
+            const response = await api.post(`/chat/bookings/${activeBookingId}/messages`, {
+                message: trimmed,
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to send message');
-            }
-
-            const data = await response.json();
-            if (data.message) {
-                setMessages((prev) => [...prev, data.message]);
+            if (response.data.message) {
+                setMessages((prev) => [...prev, response.data.message]);
             }
             setNewMessage('');
         } catch (err) {

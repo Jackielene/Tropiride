@@ -238,28 +238,18 @@ Route::middleware(['auth', 'driver'])->prefix('driver')->name('driver.')->group(
     // Debug route to check driver data
     Route::get('/debug', function () {
         $driver = auth()->user();
+        $assignedBookings = \App\Models\Booking::where('driver_id', $driver->id)->get(['id', 'driver_id', 'status', 'user_id']);
+        $availableBookings = \App\Models\Booking::where('status', 'pending')->whereNull('driver_id')->get(['id', 'driver_id', 'status', 'user_id']);
+        
         return response()->json([
-            'id' => $driver->id,
-            'name' => $driver->name,
-            'email' => $driver->email,
-            'phone' => $driver->phone,
-            'age' => $driver->age,
-            'address' => $driver->address,
-            'avatar' => $driver->avatar,
-            'avatar_url' => $driver->avatar_url,
-            'profile_completed' => $driver->profile_completed,
-            'verification_status' => $driver->verification_status,
-            'driver_license_front' => $driver->driver_license_front,
-            'driver_license_back' => $driver->driver_license_back,
-            'driver_license_front_url' => $driver->driver_license_front_url,
-            'driver_license_back_url' => $driver->driver_license_back_url,
-            'verified_at' => $driver->verified_at,
-            'rejection_reason' => $driver->rejection_reason,
-            'is_profile_ready' => $driver->isProfileReadyForVerification(),
-            'is_verified' => $driver->isVerified(),
-            'has_completed_profile' => $driver->hasCompletedProfile(),
-            'is_verification_pending' => $driver->isVerificationPending(),
-            'is_verification_rejected' => $driver->isVerificationRejected(),
+            'driver' => [
+                'id' => $driver->id,
+                'name' => $driver->name,
+                'is_verified' => $driver->isVerified(),
+                'verification_status' => $driver->verification_status,
+            ],
+            'assigned_bookings' => $assignedBookings,
+            'available_bookings' => $availableBookings,
         ]);
     })->name('debug');
     

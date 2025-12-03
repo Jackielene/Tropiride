@@ -1,12 +1,13 @@
 import TropirideLayout from '@/layouts/tropiride-layout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Loader2, MapPin } from 'lucide-react';
+import { MessageSquare, Loader2, MapPin, RefreshCw } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { SharedData } from '@/types';
+import api from '@/lib/axios';
 
 interface ChatDriver {
     id: number;
@@ -51,20 +52,63 @@ interface MessagesPageProps {
     initialBookingId: number | null;
 }
 
-export default function MessagesPage({ bookings, initialBookingId }: MessagesPageProps) {
+export default function MessagesPage({ bookings: initialBookings, initialBookingId }: MessagesPageProps) {
     const { auth } = usePage<SharedData>().props;
     const userId = auth.user?.id;
 
+    const [bookings, setBookings] = useState<ChatConversation[]>(initialBookings);
     const [activeBookingId, setActiveBookingId] = useState<number | null>(initialBookingId);
+
+    // Sync with props when they change (e.g., after Inertia navigation)
+    useEffect(() => {
+        setBookings(initialBookings);
+    }, [initialBookings]);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [isSending, setIsSending] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const csrfToken = typeof document !== 'undefined'
-        ? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-        : '';
     const messagesRef = useRef<HTMLDivElement | null>(null);
+    
+
+    // Auto-refresh bookings every 10 seconds to catch newly accepted rides
+    useEffect(() => {
+        const refreshBookings = () => {
+            router.reload({ 
+                only: ['bookings', 'initialBookingId'],
+                onSuccess: (page) => {
+                    const newBookings = (page.props as any).bookings || [];
+                    setBookings(newBookings);
+                    // If we had no bookings before but now we do, set the active one
+                    if (bookings.length === 0 && newBookings.length > 0) {
+                        setActiveBookingId(newBookings[0].chat_booking_id);
+                    }
+                }
+            });
+        };
+
+        // Refresh every 10 seconds
+        const interval = setInterval(refreshBookings, 10000);
+        
+        return () => clearInterval(interval);
+    }, [bookings.length]);
+
+    // Manual refresh function
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        router.reload({ 
+            only: ['bookings', 'initialBookingId'],
+            onSuccess: (page) => {
+                const newBookings = (page.props as any).bookings || [];
+                setBookings(newBookings);
+                if (bookings.length === 0 && newBookings.length > 0) {
+                    setActiveBookingId(newBookings[0].chat_booking_id);
+                }
+            },
+            onFinish: () => setIsRefreshing(false)
+        });
+    };
 
     const activeBooking = useMemo(
         () => (activeBookingId ? bookings.find((booking) => booking.chat_booking_id === activeBookingId) || null : null),
@@ -79,41 +123,30 @@ export default function MessagesPage({ bookings, initialBookingId }: MessagesPag
 
         let isCurrent = true;
 
-        const loadMessages = (silent = false) => {
+        const loadMessages = async (silent = false) => {
             if (!silent) {
                 setIsLoading(true);
                 setError(null);
             }
 
-            fetch(`/chat/bookings/${activeBookingId}/messages`, {
-                headers: {
-                    Accept: 'application/json',
-                },
-                credentials: 'same-origin',
-            })
-                .then((response) => {
-                    if (!response.ok) {
-                        throw new Error('Failed to load messages');
-                    }
-                    return response.json();
-                })
-                .then((data) => {
-                    if (!isCurrent) return;
-                    setMessages(data.messages ?? []);
-                })
-                .catch((err) => {
-                    console.error(err);
-                    if (!isCurrent) return;
-                    if (!silent) {
-                        setError('We could not load your messages. Please try again.');
-                    }
-                })
-                .finally(() => {
-                    if (!isCurrent) return;
-                    if (!silent) {
-                        setIsLoading(false);
-                    }
-                });
+            try {
+                const response = await api.get(`/chat/bookings/${activeBookingId}/messages`);
+                if (!isCurrent) return;
+                setMessages(response.data.messages ?? []);
+            } catch (err) {
+                console.error(err);
+                if (!isCurrent) return;
+                if (!silent) {
+                    setError('We could not load your messages. Please try again.');
+                }
+            } finally {
+                if (!isCurrent && !silent) {
+                    setIsLoading(false);
+                }
+                if (isCurrent && !silent) {
+                    setIsLoading(false);
+                }
+            }
         };
 
         loadMessages();
@@ -153,25 +186,12 @@ export default function MessagesPage({ bookings, initialBookingId }: MessagesPag
         setError(null);
 
         try {
-            const response = await fetch(`/chat/bookings/${activeBookingId}/messages`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest',
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({ message: trimmed }),
+            const response = await api.post(`/chat/bookings/${activeBookingId}/messages`, {
+                message: trimmed,
             });
 
-            if (!response.ok) {
-                throw new Error('Failed to send message');
-            }
-
-            const data = await response.json();
-            if (data.message) {
-                setMessages((prev) => [...prev, data.message]);
+            if (response.data.message) {
+                setMessages((prev) => [...prev, response.data.message]);
             }
             setNewMessage('');
         } catch (sendError) {
@@ -253,11 +273,28 @@ export default function MessagesPage({ bookings, initialBookingId }: MessagesPag
                                 <MessageSquare className="h-12 w-12 text-gray-400 mx-auto" />
                                 <h3 className="text-xl font-semibold text-gray-800">No active conversations yet</h3>
                                 <p className="text-gray-500 max-w-md mx-auto">
-                                    Request a ride first. Once a driver accepts, we’ll automatically open a chat for both of you.
+                                    Request a ride first. Once a driver accepts, a chat will automatically appear here.
                                 </p>
-                                <Button asChild className="bg-gradient-to-r from-cyan-500 to-blue-600">
-                                    <Link href="/tropiride/vehicles">Request a Ride</Link>
-                                </Button>
+                                <p className="text-sm text-gray-400">
+                                    This page refreshes automatically every 10 seconds.
+                                </p>
+                                <div className="flex justify-center gap-3">
+                                    <Button asChild className="bg-gradient-to-r from-cyan-500 to-blue-600">
+                                        <Link href="/tropiride/vehicles">Request a Ride</Link>
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        onClick={handleRefresh}
+                                        disabled={isRefreshing}
+                                    >
+                                        {isRefreshing ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <RefreshCw className="h-4 w-4" />
+                                        )}
+                                        <span className="ml-2">Refresh</span>
+                                    </Button>
+                                </div>
                             </CardContent>
                         </Card>
                     ) : (
@@ -265,8 +302,21 @@ export default function MessagesPage({ bookings, initialBookingId }: MessagesPag
                             <div className="space-y-4">
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>Bookings</CardTitle>
-                                        <CardDescription>Select a ride to view its chat room</CardDescription>
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <CardTitle>Bookings</CardTitle>
+                                                <CardDescription>Select a ride to view its chat room</CardDescription>
+                                            </div>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm"
+                                                onClick={handleRefresh}
+                                                disabled={isRefreshing}
+                                                title="Refresh bookings"
+                                            >
+                                                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                                            </Button>
+                                        </div>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         {bookings.map((booking) => renderBookingButton(booking))}

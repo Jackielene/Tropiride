@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
 export const rides = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ rides.definition = {
 
 /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
 rides.url = (options?: RouteQueryOptions) => {
@@ -103,7 +103,7 @@ rides.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
 rides.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -112,7 +112,7 @@ rides.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
 rides.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -122,7 +122,7 @@ rides.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
     const ridesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -132,7 +132,7 @@ rides.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
         ridesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -141,7 +141,7 @@ rides.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
         ridesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -231,7 +231,7 @@ acceptBooking.post = (args: { bookingId: string | number } | [bookingId: string 
     acceptBooking.form = acceptBookingForm
 /**
 * @see \App\Http\Controllers\DriverDashboardController::updateBookingStatus
- * @see app/Http/Controllers/DriverDashboardController.php:196
+ * @see app/Http/Controllers/DriverDashboardController.php:225
  * @route '/driver/bookings/{bookingId}/status'
  */
 export const updateBookingStatus = (args: { bookingId: string | number } | [bookingId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -246,7 +246,7 @@ updateBookingStatus.definition = {
 
 /**
 * @see \App\Http\Controllers\DriverDashboardController::updateBookingStatus
- * @see app/Http/Controllers/DriverDashboardController.php:196
+ * @see app/Http/Controllers/DriverDashboardController.php:225
  * @route '/driver/bookings/{bookingId}/status'
  */
 updateBookingStatus.url = (args: { bookingId: string | number } | [bookingId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -274,7 +274,7 @@ updateBookingStatus.url = (args: { bookingId: string | number } | [bookingId: st
 
 /**
 * @see \App\Http\Controllers\DriverDashboardController::updateBookingStatus
- * @see app/Http/Controllers/DriverDashboardController.php:196
+ * @see app/Http/Controllers/DriverDashboardController.php:225
  * @route '/driver/bookings/{bookingId}/status'
  */
 updateBookingStatus.patch = (args: { bookingId: string | number } | [bookingId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -284,7 +284,7 @@ updateBookingStatus.patch = (args: { bookingId: string | number } | [bookingId: 
 
     /**
 * @see \App\Http\Controllers\DriverDashboardController::updateBookingStatus
- * @see app/Http/Controllers/DriverDashboardController.php:196
+ * @see app/Http/Controllers/DriverDashboardController.php:225
  * @route '/driver/bookings/{bookingId}/status'
  */
     const updateBookingStatusForm = (args: { bookingId: string | number } | [bookingId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -299,7 +299,7 @@ updateBookingStatus.patch = (args: { bookingId: string | number } | [bookingId: 
 
             /**
 * @see \App\Http\Controllers\DriverDashboardController::updateBookingStatus
- * @see app/Http/Controllers/DriverDashboardController.php:196
+ * @see app/Http/Controllers/DriverDashboardController.php:225
  * @route '/driver/bookings/{bookingId}/status'
  */
         updateBookingStatusForm.patch = (args: { bookingId: string | number } | [bookingId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

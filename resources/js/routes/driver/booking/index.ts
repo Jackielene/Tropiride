@@ -75,7 +75,7 @@ accept.post = (args: { bookingId: string | number } | [bookingId: string | numbe
     accept.form = acceptForm
 /**
 * @see \App\Http\Controllers\DriverDashboardController::status
- * @see app/Http/Controllers/DriverDashboardController.php:196
+ * @see app/Http/Controllers/DriverDashboardController.php:225
  * @route '/driver/bookings/{bookingId}/status'
  */
 export const status = (args: { bookingId: string | number } | [bookingId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -90,7 +90,7 @@ status.definition = {
 
 /**
 * @see \App\Http\Controllers\DriverDashboardController::status
- * @see app/Http/Controllers/DriverDashboardController.php:196
+ * @see app/Http/Controllers/DriverDashboardController.php:225
  * @route '/driver/bookings/{bookingId}/status'
  */
 status.url = (args: { bookingId: string | number } | [bookingId: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -118,7 +118,7 @@ status.url = (args: { bookingId: string | number } | [bookingId: string | number
 
 /**
 * @see \App\Http\Controllers\DriverDashboardController::status
- * @see app/Http/Controllers/DriverDashboardController.php:196
+ * @see app/Http/Controllers/DriverDashboardController.php:225
  * @route '/driver/bookings/{bookingId}/status'
  */
 status.patch = (args: { bookingId: string | number } | [bookingId: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
@@ -128,7 +128,7 @@ status.patch = (args: { bookingId: string | number } | [bookingId: string | numb
 
     /**
 * @see \App\Http\Controllers\DriverDashboardController::status
- * @see app/Http/Controllers/DriverDashboardController.php:196
+ * @see app/Http/Controllers/DriverDashboardController.php:225
  * @route '/driver/bookings/{bookingId}/status'
  */
     const statusForm = (args: { bookingId: string | number } | [bookingId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({
@@ -143,7 +143,7 @@ status.patch = (args: { bookingId: string | number } | [bookingId: string | numb
 
             /**
 * @see \App\Http\Controllers\DriverDashboardController::status
- * @see app/Http/Controllers/DriverDashboardController.php:196
+ * @see app/Http/Controllers/DriverDashboardController.php:225
  * @route '/driver/bookings/{bookingId}/status'
  */
         statusForm.patch = (args: { bookingId: string | number } | [bookingId: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'post'> => ({

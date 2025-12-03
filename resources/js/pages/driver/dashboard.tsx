@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
     Car, 
     Clock, 
@@ -26,7 +27,7 @@ import {
     Home,
     Hash
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface StatCardProps {
     title: string;
@@ -168,8 +169,19 @@ export default function DriverDashboard({
     driver,
 }: Props) {
     const { flash } = usePage().props as any;
+    const ridesWaitingForUpdates = assignedBookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled');
     const [isAccepting, setIsAccepting] = useState<number | null>(null);
+    
+    // Debug logging
+    useEffect(() => {
+        console.log('=== Driver Dashboard Data ===');
+        console.log('Assigned Bookings:', assignedBookings);
+        console.log('Available Bookings:', availableBookings);
+        console.log('Stats:', stats);
+        console.log('Flash:', flash);
+    }, [assignedBookings, availableBookings, stats, flash]);
     const [isUpdating, setIsUpdating] = useState<number | null>(null);
+    const [acceptConfirmationModal, setAcceptConfirmationModal] = useState<number | null>(null);
     const [profileData, setProfileData] = useState({
         name: driver.name || '',
         email: driver.email || '',
@@ -206,16 +218,31 @@ export default function DriverDashboard({
     };
 
     const handleAcceptBooking = (bookingId: number) => {
-        if (confirm('Are you sure you want to accept this booking?')) {
+        setAcceptConfirmationModal(bookingId);
+    };
+
+    const handleConfirmAccept = () => {
+        if (acceptConfirmationModal) {
+            const bookingId = acceptConfirmationModal;
+            console.log('Accepting booking:', bookingId);
             setIsAccepting(bookingId);
-            router.post(
-                `/driver/bookings/${bookingId}/accept`,
-                {},
-                {
-                    preserveScroll: true,
-                    onFinish: () => setIsAccepting(null),
-                }
-            );
+            setAcceptConfirmationModal(null); // Close modal immediately
+            
+            router.post(`/driver/bookings/${bookingId}/accept`, {}, {
+                onSuccess: (page) => {
+                    console.log('Accept success, page props:', page.props);
+                    console.log('Assigned bookings after accept:', page.props.assignedBookings);
+                    setIsAccepting(null);
+                },
+                onError: (errors) => {
+                    console.error('Accept error:', errors);
+                    setIsAccepting(null);
+                },
+                onFinish: () => {
+                    console.log('Accept finished');
+                    setIsAccepting(null);
+                },
+            });
         }
     };
 
@@ -752,9 +779,9 @@ export default function DriverDashboard({
                             <div>
                                 <p className="text-sm font-semibold text-primary">Assigned rides</p>
                                 <p className="text-lg font-bold">
-                                    {assignedBookings.length}{' '}
+                                    {ridesWaitingForUpdates.length}{' '}
                                     <span className="font-normal text-muted-foreground">
-                                        ride{assignedBookings.length === 1 ? '' : 's'} waiting for updates
+                                        ride{ridesWaitingForUpdates.length === 1 ? '' : 's'} waiting for updates
                                     </span>
                                 </p>
                                 <p className="text-sm text-muted-foreground">
@@ -768,6 +795,29 @@ export default function DriverDashboard({
                     </Card>
                 </div>
             </div>
+
+            {/* Accept Booking Confirmation Dialog */}
+            <Dialog open={!!acceptConfirmationModal} onOpenChange={(open) => !open && setAcceptConfirmationModal(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Accept Booking</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to accept this booking?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="outline" onClick={() => setAcceptConfirmationModal(null)}>
+                            No
+                        </Button>
+                        <Button 
+                            onClick={handleConfirmAccept} 
+                            disabled={isAccepting === acceptConfirmationModal}
+                        >
+                            {isAccepting === acceptConfirmationModal ? 'Accepting...' : 'Yes'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AppLayout>
     );
 }

@@ -132,61 +132,90 @@ class DriverDashboardController extends Controller
      */
     public function acceptBooking(Request $request, $bookingId)
     {
+        $driver = auth()->user();
+        
+        \Log::info('Accept Booking Started', [
+            'booking_id' => $bookingId,
+            'driver_id' => $driver->id,
+            'driver_name' => $driver->name,
+        ]);
+
         try {
-            $driver = auth()->user();
+            $booking = Booking::findOrFail($bookingId);
+            
+            \Log::info('Booking Found', [
+                'booking_id' => $booking->id,
+                'current_driver_id' => $booking->driver_id,
+                'status' => $booking->status,
+            ]);
 
-            DB::transaction(function () use ($bookingId, $driver) {
-                $booking = Booking::lockForUpdate()->findOrFail($bookingId);
-
-                if ($booking->driver_id !== null) {
-                    throw new \RuntimeException('assigned');
-                }
-
-                if ($booking->status !== 'pending') {
-                    throw new \RuntimeException('unavailable');
-                }
-
-                $booking->driver_id = $driver->id;
-
-                $existingThread = Booking::where('user_id', $booking->user_id)
-                    ->where('driver_id', $driver->id)
-                    ->where('id', '!=', $booking->id)
-                    ->orderBy('created_at')
-                    ->first();
-
-                if ($existingThread) {
-                    $booking->chat_thread_id = $existingThread->chat_thread_id ?? $existingThread->id;
-                }
-
-                $booking->save();
-
-                if (!$booking->chat_thread_id) {
-                    $booking->chat_thread_id = $booking->id;
-                    $booking->save();
-                }
-
-                $chatBooking = $booking->chat_thread_id === $booking->id
-                    ? $booking
-                    : Booking::findOrFail($booking->chat_thread_id);
-
-                $this->sendAcceptanceMessage($chatBooking, $driver, $booking);
-            });
-
-            return back()->with('success', 'Booking accepted successfully! You can now see it in your assigned rides.');
-        } catch (\RuntimeException $exception) {
-            if ($exception->getMessage() === 'assigned') {
-                return back()->with('error', 'This booking has already been assigned to another driver.');
+            if ($booking->driver_id !== null) {
+                \Log::warning('Booking already assigned', ['booking_id' => $bookingId]);
+                return redirect()->route('driver.dashboard')
+                    ->with('error', 'This booking has already been assigned to another driver.');
             }
 
-            if ($exception->getMessage() === 'unavailable') {
-                return back()->with('error', 'This booking is no longer available.');
+            if ($booking->status !== 'pending') {
+                \Log::warning('Booking not pending', ['booking_id' => $bookingId, 'status' => $booking->status]);
+                return redirect()->route('driver.dashboard')
+                    ->with('error', 'This booking is no longer available.');
             }
 
-            \Log::error('Accept Booking Error: ' . $exception->getMessage());
-            return back()->with('error', 'Failed to accept booking. Please try again.');
+            // Assign the driver
+            $booking->driver_id = $driver->id;
+            $booking->save();
+            
+            \Log::info('Booking Saved', [
+                'booking_id' => $booking->id,
+                'new_driver_id' => $booking->driver_id,
+            ]);
+
+            // Refresh from DB to confirm
+            $booking->refresh();
+            
+            \Log::info('Booking After Refresh', [
+                'booking_id' => $booking->id,
+                'driver_id' => $booking->driver_id,
+            ]);
+
+            // Handle chat thread
+            $existingThread = Booking::where('user_id', $booking->user_id)
+                ->where('driver_id', $driver->id)
+                ->where('id', '!=', $booking->id)
+                ->orderBy('created_at')
+                ->first();
+
+            if ($existingThread) {
+                $booking->chat_thread_id = $existingThread->chat_thread_id ?? $existingThread->id;
+            } else if (!$booking->chat_thread_id) {
+                $booking->chat_thread_id = $booking->id;
+            }
+            $booking->save();
+
+            // Send acceptance message
+            $chatBooking = $booking->chat_thread_id === $booking->id
+                ? $booking
+                : Booking::find($booking->chat_thread_id) ?? $booking;
+
+            $this->sendAcceptanceMessage($chatBooking, $driver, $booking);
+
+            \Log::info('Accept Booking Complete', [
+                'booking_id' => $booking->id,
+                'driver_id' => $booking->driver_id,
+            ]);
+
+            return redirect()->route('driver.dashboard')
+                ->with('success', 'Booking accepted successfully! You can now see it in your assigned rides.');
+                
         } catch (\Exception $e) {
-            \Log::error('Accept Booking Error: ' . $e->getMessage());
-            return back()->with('error', 'Failed to accept booking. Please try again.');
+            \Log::error('Accept Booking Error', [
+                'booking_id' => $bookingId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return redirect()->route('driver.dashboard')
+                ->with('error', 'Failed to accept booking: ' . $e->getMessage());
         }
     }
     

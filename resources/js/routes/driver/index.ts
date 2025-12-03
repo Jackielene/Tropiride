@@ -83,7 +83,7 @@ dashboard.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     dashboard.form = dashboardForm
 /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
 export const rides = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -98,7 +98,7 @@ rides.definition = {
 
 /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
 rides.url = (options?: RouteQueryOptions) => {
@@ -107,7 +107,7 @@ rides.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
 rides.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -116,7 +116,7 @@ rides.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
 rides.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -126,7 +126,7 @@ rides.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
     const ridesForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -136,7 +136,7 @@ rides.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
         ridesForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,7 +145,7 @@ rides.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\DriverDashboardController::rides
- * @see app/Http/Controllers/DriverDashboardController.php:219
+ * @see app/Http/Controllers/DriverDashboardController.php:248
  * @route '/driver/rides'
  */
         ridesForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
