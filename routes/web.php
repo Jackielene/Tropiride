@@ -269,7 +269,15 @@ Route::middleware(['auth', 'driver'])->prefix('driver')->name('driver.')->group(
 Route::middleware('auth')->group(function () {
     Route::get('/chat/bookings/{booking}/messages', [ChatController::class, 'messages'])->name('chat.messages');
     Route::post('/chat/bookings/{booking}/messages', [ChatController::class, 'store'])->name('chat.messages.store');
+    
+    // GPS Tracking Routes
+    Route::post('/gps/update', [App\Http\Controllers\GpsTrackingController::class, 'updateLocation'])->name('gps.update');
+    Route::post('/gps/stop', [App\Http\Controllers\GpsTrackingController::class, 'stopTracking'])->name('gps.stop');
+    Route::get('/gps/booking/{booking}/location', [App\Http\Controllers\GpsTrackingController::class, 'getDriverLocation'])->name('gps.driver.location');
 });
+
+// Customer tracking page
+Route::middleware(['auth', 'customer'])->get('/tropiride/tracking/{booking}', [App\Http\Controllers\GpsTrackingController::class, 'trackingPage'])->name('tropiride.tracking');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/driver-settings.php';

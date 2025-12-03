@@ -41,6 +41,7 @@ class TropirideProfileController extends Controller
                     'return_time' => $booking->return_time,
                     'vehicle_type' => $booking->vehicle_type ?? null,
                     'passengers' => $booking->passengers ?? null,
+                    'driver_id' => $booking->driver_id, // For GPS tracking
                 ];
             });
         

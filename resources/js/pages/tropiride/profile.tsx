@@ -25,6 +25,7 @@ import {
   FaTimesCircle,
   FaBan,
   FaUsers,
+  FaLocationArrow,
 } from "react-icons/fa"
 import { usePage, Link } from "@inertiajs/react"
 import { Form } from "@inertiajs/react"
@@ -380,6 +381,7 @@ export default function TropirideProfile() {
         returnDate: returnDisplay,
         vehicleType: booking.vehicle_type || null,
         passengers: booking.passengers || null,
+        driver_id: booking.driver_id || null, // For GPS tracking
       };
     } catch (error) {
       console.error('Error processing booking:', booking, error);
@@ -871,6 +873,19 @@ export default function TropirideProfile() {
                                 <p className="text-xs text-gray-600">Total Fare</p>
                                 <p className="text-lg font-bold text-gray-900">₱{(Number(booking.price) || 0).toFixed(2)}</p>
                               </div>
+                              {/* Track Driver button - show when ride is accepted or in progress */}
+                              {(booking.status === 'accepted' || booking.status === 'in_progress') && booking.driver_id && (
+                                <Link href={`/tropiride/tracking/${booking.id}`}>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-2 border-2 border-cyan-400 text-cyan-700 hover:bg-cyan-50 hover:border-cyan-500 bg-white font-semibold shadow-sm"
+                                  >
+                                    <FaLocationArrow className="w-3 h-3" />
+                                    Track Driver
+                                  </Button>
+                                </Link>
+                              )}
                               {booking.status !== 'cancelled' && booking.status !== 'completed' && (
                                 <Button
                                   onClick={() => handleCancelBooking(booking.id)}

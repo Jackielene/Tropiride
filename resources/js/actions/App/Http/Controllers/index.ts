@@ -6,6 +6,7 @@ import AdminDashboardController from './AdminDashboardController'
 import VerificationController from './VerificationController'
 import DriverDashboardController from './DriverDashboardController'
 import DriverProfileController from './DriverProfileController'
+import GpsTrackingController from './GpsTrackingController'
 import Settings from './Settings'
 import Driver from './Driver'
 import Admin from './Admin'
@@ -18,6 +19,7 @@ AdminDashboardController: Object.assign(AdminDashboardController, AdminDashboard
 VerificationController: Object.assign(VerificationController, VerificationController),
 DriverDashboardController: Object.assign(DriverDashboardController, DriverDashboardController),
 DriverProfileController: Object.assign(DriverProfileController, DriverProfileController),
+GpsTrackingController: Object.assign(GpsTrackingController, GpsTrackingController),
 Settings: Object.assign(Settings, Settings),
 Driver: Object.assign(Driver, Driver),
 Admin: Object.assign(Admin, Admin),

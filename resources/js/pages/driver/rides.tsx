@@ -5,8 +5,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MapPin, Phone, Car, ArrowLeft } from 'lucide-react';
+import { MapPin, Phone, Car, ArrowLeft, Navigation } from 'lucide-react';
 import { useState } from 'react';
+import GpsTrackingCard from '@/components/driver/GpsTrackingCard';
 
 interface Customer {
     id: number;
@@ -48,6 +49,12 @@ interface Props {
 export default function DriverRides({ assignedBookings = [], driver }: Props) {
     const [isUpdating, setIsUpdating] = useState<number | null>(null);
     const [statusModal, setStatusModal] = useState<{ bookingId: number; status: 'in_progress' | 'completed' } | null>(null);
+    const [activeTrackingBookingId, setActiveTrackingBookingId] = useState<number | null>(null);
+
+    // Find active bookings (accepted or in_progress) for GPS tracking
+    const activeBookings = assignedBookings.filter(b => 
+        b.status === 'accepted' || b.status === 'in_progress'
+    );
 
     const getInitials = (name: string) =>
         name
@@ -122,6 +129,67 @@ export default function DriverRides({ assignedBookings = [], driver }: Props) {
                         </Button>
                     </div>
                 </div>
+
+                {/* GPS Tracking Section */}
+                {activeBookings.length > 0 && (
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <div className="md:col-span-1">
+                            <GpsTrackingCard 
+                                bookingId={activeTrackingBookingId || activeBookings[0]?.id || null}
+                                isActiveRide={activeBookings.length > 0}
+                                onTrackingChange={(isTracking) => {
+                                    if (isTracking && activeBookings.length > 0) {
+                                        setActiveTrackingBookingId(activeBookings[0].id);
+                                    } else {
+                                        setActiveTrackingBookingId(null);
+                                    }
+                                }}
+                            />
+                        </div>
+                        <div className="md:col-span-1 lg:col-span-2">
+                            <Card className="h-full">
+                                <CardHeader className="pb-3">
+                                    <CardTitle className="flex items-center gap-2 text-base">
+                                        <Navigation className="h-5 w-5 text-primary" />
+                                        Active Rides for Tracking
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Select which ride to share your GPS location with
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-2">
+                                        {activeBookings.map((booking) => (
+                                            <button
+                                                key={booking.id}
+                                                onClick={() => setActiveTrackingBookingId(booking.id)}
+                                                className={`w-full text-left p-3 rounded-lg border transition-all ${
+                                                    activeTrackingBookingId === booking.id
+                                                        ? 'border-primary bg-primary/5 shadow-sm'
+                                                        : 'border-muted hover:border-primary/50'
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="font-medium text-sm">
+                                                            #{booking.id} - {booking.customer?.name || 'Unknown'}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground truncate max-w-[250px]">
+                                                            {booking.pickup_location}
+                                                        </p>
+                                                    </div>
+                                                    <Badge variant={booking.status === 'in_progress' ? 'default' : 'secondary'}>
+                                                        {booking.status.replace('_', ' ')}
+                                                    </Badge>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
+                )}
 
                 <Card>
                     <CardHeader>
