@@ -77,15 +77,15 @@ class DriverProfileController extends Controller
                 $user->markProfileAsCompleted();
                 \Log::info('Driver ' . $user->id . ' profile auto-submitted for verification after avatar upload');
                 
-                return redirect()->route('driver.dashboard')
+                return redirect()->back()
                     ->with('status', 'Avatar uploaded! Your profile is now complete and submitted for verification.');
             }
 
-            return redirect()->route('driver.dashboard')
+            return redirect()->back()
                 ->with('status', 'Avatar updated successfully!');
         } catch (\Exception $e) {
             \Log::error('Driver avatar upload failed: ' . $e->getMessage());
-            return redirect()->route('driver.dashboard')
+            return redirect()->back()
                 ->with('error', 'Failed to upload avatar: ' . $e->getMessage());
         }
     }

@@ -122,16 +122,25 @@ Route::middleware(['auth', 'customer'])->post('/tropiride/bookings/{id}/cancel',
 Route::middleware(['auth', 'customer'])->post('/tropiride/booking/confirm', function (Request $request) {
     $bookingData = $request->validate([
         'id' => 'required|string',
+        'serviceType' => 'nullable|string|in:per_day_rental,pickup_dropoff,airport_port_transfer',
         'vehicleType' => 'required|string',
         'vehicleName' => 'required|string',
         'pickupDate' => 'required|string',
-        'returnDate' => 'required|string',
+        'returnDate' => 'nullable|string',
+        'pickupTime' => 'nullable|string',
         'pickupLocation' => 'required|string',
+        'dropoffLocation' => 'nullable|string',
         'passengers' => 'required|integer',
         'customerInfo' => 'required|array',
         'specialRequests' => 'nullable|string',
         'payment' => 'nullable|array',
         'driverInfo' => 'nullable|array',
+        // Airport/Port transfer fields
+        'transferType' => 'nullable|string|in:arrival,departure',
+        'transferLocation' => 'nullable|string|in:airport,port',
+        'flightVesselNumber' => 'nullable|string',
+        'terminalInfo' => 'nullable|string',
+        'arrivalDepartureTime' => 'nullable|string',
     ]);
     
     // Store in session

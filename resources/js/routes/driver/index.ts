@@ -238,7 +238,7 @@ messages.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     messages.form = messagesForm
 /**
- * @see routes/web.php:239
+ * @see routes/web.php:248
  * @route '/driver/debug'
  */
 export const debug = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -252,7 +252,7 @@ debug.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:239
+ * @see routes/web.php:248
  * @route '/driver/debug'
  */
 debug.url = (options?: RouteQueryOptions) => {
@@ -260,7 +260,7 @@ debug.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:239
+ * @see routes/web.php:248
  * @route '/driver/debug'
  */
 debug.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -268,7 +268,7 @@ debug.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:239
+ * @see routes/web.php:248
  * @route '/driver/debug'
  */
 debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -277,7 +277,7 @@ debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:239
+ * @see routes/web.php:248
  * @route '/driver/debug'
  */
     const debugForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -286,7 +286,7 @@ debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:239
+ * @see routes/web.php:248
  * @route '/driver/debug'
  */
         debugForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -294,7 +294,7 @@ debug.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:239
+ * @see routes/web.php:248
  * @route '/driver/debug'
  */
         debugForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

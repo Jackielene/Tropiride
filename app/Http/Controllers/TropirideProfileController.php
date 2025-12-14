@@ -40,8 +40,16 @@ class TropirideProfileController extends Controller
                     'return_date' => $booking->return_date,
                     'return_time' => $booking->return_time,
                     'vehicle_type' => $booking->vehicle_type ?? null,
+                    'service_type' => $booking->service_type ?? null,
                     'passengers' => $booking->passengers ?? null,
                     'driver_id' => $booking->driver_id, // For GPS tracking
+                    // Airport/Port transfer fields
+                    'flight_vessel_number' => $booking->flight_vessel_number ?? null,
+                    'terminal_info' => $booking->terminal_info ?? null,
+                    'arrival_departure_time' => $booking->arrival_departure_time ?? null,
+                    'transfer_type' => $booking->transfer_type ?? null,
+                    // Payment
+                    'payment_method' => $booking->payment_method ?? null,
                 ];
             });
         

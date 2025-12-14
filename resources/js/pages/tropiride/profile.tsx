@@ -26,6 +26,14 @@ import {
   FaBan,
   FaUsers,
   FaLocationArrow,
+  FaPlane,
+  FaShip,
+  FaCalendarDay,
+  FaExchangeAlt,
+  FaCreditCard,
+  FaPaypal,
+  FaHandHoldingUsd,
+  FaMoneyBillWave,
 } from "react-icons/fa"
 import { usePage, Link } from "@inertiajs/react"
 import { Form } from "@inertiajs/react"
@@ -380,8 +388,16 @@ export default function TropirideProfile() {
         pickupDate: pickupDisplay,
         returnDate: returnDisplay,
         vehicleType: booking.vehicle_type || null,
+        serviceType: booking.service_type || null,
         passengers: booking.passengers || null,
         driver_id: booking.driver_id || null, // For GPS tracking
+        // Airport/Port transfer fields
+        flightVesselNumber: booking.flight_vessel_number || null,
+        terminalInfo: booking.terminal_info || null,
+        arrivalDepartureTime: booking.arrival_departure_time || null,
+        transferType: booking.transfer_type || null,
+        // Payment
+        paymentMethod: booking.payment_method || null,
       };
     } catch (error) {
       console.error('Error processing booking:', booking, error);
@@ -546,7 +562,9 @@ export default function TropirideProfile() {
                         <div>
                           <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">Total Spent</p>
                           <p className="text-2xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
-                            ₱{recentBookings.reduce((sum, booking) => sum + (Number(booking.price) || 0), 0).toFixed(2)}
+                            ₱{recentBookings
+                              .filter(booking => booking.status !== 'cancelled')
+                              .reduce((sum, booking) => sum + (Number(booking.price) || 0), 0).toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -766,6 +784,42 @@ export default function TropirideProfile() {
                             </div>
                           </div>
 
+                          {/* Service Type Badge and Payment Method */}
+                          <div className="flex flex-wrap items-center gap-2 mb-3">
+                            {booking.serviceType && (
+                              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ${
+                                booking.serviceType === 'per_day_rental' 
+                                  ? 'bg-blue-100 text-blue-700 border border-blue-200' 
+                                  : booking.serviceType === 'pickup_dropoff' 
+                                    ? 'bg-green-100 text-green-700 border border-green-200' 
+                                    : 'bg-purple-100 text-purple-700 border border-purple-200'
+                              }`}>
+                                {booking.serviceType === 'per_day_rental' && <FaCalendarDay className="text-xs" />}
+                                {booking.serviceType === 'pickup_dropoff' && <FaRoute className="text-xs" />}
+                                {booking.serviceType === 'airport_port_transfer' && <FaPlane className="text-xs" />}
+                                {booking.serviceType === 'per_day_rental' && 'Per-Day Rental'}
+                                {booking.serviceType === 'pickup_dropoff' && 'Pickup & Drop-off'}
+                                {booking.serviceType === 'airport_port_transfer' && 'Airport/Port Transfer'}
+                              </div>
+                            )}
+                            {booking.paymentMethod && (
+                              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ${
+                                booking.paymentMethod === 'debit' 
+                                  ? 'bg-cyan-100 text-cyan-700 border border-cyan-200' 
+                                  : booking.paymentMethod === 'paypal' 
+                                    ? 'bg-blue-100 text-blue-700 border border-blue-200' 
+                                    : 'bg-green-100 text-green-700 border border-green-200'
+                              }`}>
+                                {booking.paymentMethod === 'debit' && <FaCreditCard className="text-xs" />}
+                                {booking.paymentMethod === 'paypal' && <FaPaypal className="text-xs" />}
+                                {booking.paymentMethod === 'cash' && <FaHandHoldingUsd className="text-xs" />}
+                                {booking.paymentMethod === 'debit' && 'Card Payment'}
+                                {booking.paymentMethod === 'paypal' && 'PayPal'}
+                                {booking.paymentMethod === 'cash' && 'Cash Payment'}
+                              </div>
+                            )}
+                          </div>
+
                           {/* Vehicle Type and Passengers */}
                           {(booking.vehicleType || booking.passengers) && (
                             <div className="grid md:grid-cols-2 gap-3 mb-3">
@@ -793,6 +847,45 @@ export default function TropirideProfile() {
                                   </div>
                                 </div>
                               )}
+                            </div>
+                          )}
+
+                          {/* Airport/Port Transfer Details */}
+                          {booking.serviceType === 'airport_port_transfer' && (booking.flightVesselNumber || booking.arrivalDepartureTime || booking.terminalInfo) && (
+                            <div className="mb-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                              <div className="flex items-center gap-2 mb-2">
+                                <FaPlane className="text-purple-600" />
+                                <span className="font-semibold text-purple-800 text-sm">Transfer Details</span>
+                                {booking.transferType && (
+                                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                    booking.transferType === 'arrival' 
+                                      ? 'bg-green-100 text-green-700' 
+                                      : 'bg-orange-100 text-orange-700'
+                                  }`}>
+                                    {booking.transferType === 'arrival' ? '↓ Arrival' : '↑ Departure'}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="grid md:grid-cols-3 gap-3">
+                                {booking.flightVesselNumber && (
+                                  <div className="text-sm">
+                                    <p className="text-gray-600 text-xs">Flight/Vessel</p>
+                                    <p className="font-semibold text-gray-900">{booking.flightVesselNumber}</p>
+                                  </div>
+                                )}
+                                {booking.arrivalDepartureTime && (
+                                  <div className="text-sm">
+                                    <p className="text-gray-600 text-xs">{booking.transferType === 'arrival' ? 'Arrival' : 'Departure'} Time</p>
+                                    <p className="font-semibold text-gray-900">{booking.arrivalDepartureTime}</p>
+                                  </div>
+                                )}
+                                {booking.terminalInfo && (
+                                  <div className="text-sm">
+                                    <p className="text-gray-600 text-xs">Terminal/Gate</p>
+                                    <p className="font-semibold text-gray-900">{booking.terminalInfo}</p>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           )}
 

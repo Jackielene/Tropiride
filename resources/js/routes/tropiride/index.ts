@@ -729,7 +729,7 @@ booking.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     booking.form = bookingForm
 /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:138
+ * @see app/Http/Controllers/RideRequestController.php:186
  * @route '/tropiride/bookings'
  */
 export const bookings = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -744,7 +744,7 @@ bookings.definition = {
 
 /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:138
+ * @see app/Http/Controllers/RideRequestController.php:186
  * @route '/tropiride/bookings'
  */
 bookings.url = (options?: RouteQueryOptions) => {
@@ -753,7 +753,7 @@ bookings.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:138
+ * @see app/Http/Controllers/RideRequestController.php:186
  * @route '/tropiride/bookings'
  */
 bookings.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -762,7 +762,7 @@ bookings.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:138
+ * @see app/Http/Controllers/RideRequestController.php:186
  * @route '/tropiride/bookings'
  */
 bookings.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -772,7 +772,7 @@ bookings.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:138
+ * @see app/Http/Controllers/RideRequestController.php:186
  * @route '/tropiride/bookings'
  */
     const bookingsForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -782,7 +782,7 @@ bookings.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:138
+ * @see app/Http/Controllers/RideRequestController.php:186
  * @route '/tropiride/bookings'
  */
         bookingsForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -791,7 +791,7 @@ bookings.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\RideRequestController::bookings
- * @see app/Http/Controllers/RideRequestController.php:138
+ * @see app/Http/Controllers/RideRequestController.php:186
  * @route '/tropiride/bookings'
  */
         bookingsForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -806,7 +806,7 @@ bookings.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     
     bookings.form = bookingsForm
 /**
- * @see routes/web.php:144
+ * @see routes/web.php:153
  * @route '/tropiride/confirmation'
  */
 export const confirmation = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -820,7 +820,7 @@ confirmation.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:144
+ * @see routes/web.php:153
  * @route '/tropiride/confirmation'
  */
 confirmation.url = (options?: RouteQueryOptions) => {
@@ -828,7 +828,7 @@ confirmation.url = (options?: RouteQueryOptions) => {
 }
 
 /**
- * @see routes/web.php:144
+ * @see routes/web.php:153
  * @route '/tropiride/confirmation'
  */
 confirmation.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -836,7 +836,7 @@ confirmation.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     method: 'get',
 })
 /**
- * @see routes/web.php:144
+ * @see routes/web.php:153
  * @route '/tropiride/confirmation'
  */
 confirmation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -845,7 +845,7 @@ confirmation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
     /**
- * @see routes/web.php:144
+ * @see routes/web.php:153
  * @route '/tropiride/confirmation'
  */
     const confirmationForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -854,7 +854,7 @@ confirmation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     })
 
             /**
- * @see routes/web.php:144
+ * @see routes/web.php:153
  * @route '/tropiride/confirmation'
  */
         confirmationForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -862,7 +862,7 @@ confirmation.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
             method: 'get',
         })
             /**
- * @see routes/web.php:144
+ * @see routes/web.php:153
  * @route '/tropiride/confirmation'
  */
         confirmationForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -38,8 +38,17 @@ export interface Booking {
     return_date?: string | null;
     return_time?: string | null;
     vehicle_type?: string | null;
+    service_type?: 'per_day_rental' | 'pickup_dropoff' | 'airport_port_transfer' | null;
     passengers?: number | null;
     driver_id?: number | null;
+    // Airport/Port transfer fields
+    flight_vessel_number?: string | null;
+    terminal_info?: string | null;
+    arrival_departure_time?: string | null;
+    transfer_type?: 'arrival' | 'departure' | null;
+    // Payment
+    payment_method?: 'paypal' | 'cash' | null;
+    paypal_transaction_id?: string | null;
 }
 
 export interface SharedData {

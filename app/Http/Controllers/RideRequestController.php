@@ -27,7 +27,16 @@ class RideRequestController extends Controller
             'pickup_date' => 'nullable|date',
             'return_date' => 'nullable|date|after_or_equal:pickup_date',
             'vehicle_type' => 'nullable|string|in:tricycle,tuktuk,habal-habal,multicab,van',
+            'service_type' => 'nullable|string|in:per_day_rental,pickup_dropoff,airport_port_transfer',
             'passengers' => 'nullable|integer|min:1|max:14',
+            // Airport/Port transfer fields
+            'flight_vessel_number' => 'nullable|string|max:50',
+            'terminal_info' => 'nullable|string|max:100',
+            'arrival_departure_time' => 'nullable|date_format:H:i',
+            'transfer_type' => 'nullable|string|in:arrival,departure',
+            // Payment method
+            'payment_method' => 'nullable|string|in:paypal,cash',
+            'paypal_transaction_id' => 'nullable|string|max:255',
         ], [
             'return_date.after_or_equal' => 'Return date/time must be after or equal to pickup date/time.',
         ]);
@@ -105,9 +114,42 @@ class RideRequestController extends Controller
             $bookingData['vehicle_type'] = $validated['vehicle_type'];
         }
         
+        // Set service_type if provided and column exists
+        if (isset($validated['service_type']) && Schema::hasColumn('bookings', 'service_type')) {
+            $bookingData['service_type'] = $validated['service_type'];
+        }
+        
         // Set passengers if provided and column exists
         if (isset($validated['passengers']) && Schema::hasColumn('bookings', 'passengers')) {
             $bookingData['passengers'] = $validated['passengers'];
+        }
+        
+        // Set airport/port transfer fields if provided and columns exist
+        if (isset($validated['flight_vessel_number']) && Schema::hasColumn('bookings', 'flight_vessel_number')) {
+            $bookingData['flight_vessel_number'] = $validated['flight_vessel_number'];
+        }
+        if (isset($validated['terminal_info']) && Schema::hasColumn('bookings', 'terminal_info')) {
+            $bookingData['terminal_info'] = $validated['terminal_info'];
+        }
+        if (isset($validated['arrival_departure_time']) && Schema::hasColumn('bookings', 'arrival_departure_time')) {
+            $bookingData['arrival_departure_time'] = $validated['arrival_departure_time'];
+        }
+        if (isset($validated['transfer_type']) && Schema::hasColumn('bookings', 'transfer_type')) {
+            $bookingData['transfer_type'] = $validated['transfer_type'];
+        }
+        
+        // Set payment_method if provided and column exists
+        if (isset($validated['payment_method']) && Schema::hasColumn('bookings', 'payment_method')) {
+            $bookingData['payment_method'] = $validated['payment_method'];
+        }
+        
+        // Set paypal_transaction_id if provided and column exists
+        if (isset($validated['paypal_transaction_id']) && Schema::hasColumn('bookings', 'paypal_transaction_id')) {
+            $bookingData['paypal_transaction_id'] = $validated['paypal_transaction_id'];
+            // If paid via PayPal, set payment_status to 'paid'
+            if (Schema::hasColumn('bookings', 'payment_status')) {
+                $bookingData['payment_status'] = 'paid';
+            }
         }
         
         // Set other optional fields to null if they exist
@@ -115,10 +157,16 @@ class RideRequestController extends Controller
             'pickup_time',
             'passengers',
             'vehicle_type',
+            'service_type',
             'payment_method',
             'payment_status',
+            'paypal_transaction_id',
             'notes',
             'special_requests',
+            'flight_vessel_number',
+            'terminal_info',
+            'arrival_departure_time',
+            'transfer_type',
         ];
         
         foreach ($optionalFields as $field) {

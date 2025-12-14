@@ -3,7 +3,7 @@ export const PAYPAL_CONFIG = {
   // PayPal Client ID - Replace with your actual PayPal Client ID
   // Get this from: https://developer.paypal.com/developer/applications/
   // Add VITE_PAYPAL_CLIENT_ID to your .env file
-  CLIENT_ID: import.meta.env.VITE_PAYPAL_CLIENT_ID || '',
+  CLIENT_ID: import.meta.env.VITE_PAYPAL_CLIENT_ID || 'AWVjhhuZiwAz8SGbrWKsTNbQbucuGiHIdRTZjR6OBBiAfKH1JZayKOiZycndSziBUNaCQlq1uFf8Cm-Y',
   
   // PayPal Environment
   // Use 'sandbox' for testing, 'production' for live payments
