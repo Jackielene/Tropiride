@@ -125,6 +125,12 @@ export default function GpsTrackingCard({
         setError(message);
     }, []);
 
+    const geolocationOptions: PositionOptions = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+    };
+
     // Start tracking
     const startTracking = useCallback((autoStart = false) => {
         if (!navigator.geolocation) {
@@ -149,15 +155,18 @@ export default function GpsTrackingCard({
             saveTrackingState(true, trackingBookingId);
         }
 
+        // Get an immediate fix before the watch stream so the map/UI updates instantly
+        navigator.geolocation.getCurrentPosition(
+            handlePositionSuccess,
+            handlePositionError,
+            geolocationOptions
+        );
+
         // Start watching position
         const id = navigator.geolocation.watchPosition(
             handlePositionSuccess,
             handlePositionError,
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0,
-            }
+            geolocationOptions
         );
         setWatchId(id);
 
@@ -171,7 +180,7 @@ export default function GpsTrackingCard({
             });
         }, 2000);
         setSendInterval(interval);
-    }, [handlePositionSuccess, handlePositionError, sendLocationUpdate, onTrackingChange, bookingId, saveTrackingState]);
+    }, [handlePositionSuccess, handlePositionError, sendLocationUpdate, onTrackingChange, bookingId, saveTrackingState, geolocationOptions]);
 
     // Stop tracking
     const stopTracking = useCallback(async () => {

@@ -91,6 +91,12 @@ export function useGpsTracking({
         setError(message);
     }, []);
 
+    const geolocationOptions: PositionOptions = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+    };
+
     // Start GPS tracking
     const startTracking = useCallback(() => {
         if (!navigator.geolocation) {
@@ -101,15 +107,18 @@ export function useGpsTracking({
         setIsTracking(true);
         setError(null);
 
-        // Start watching position
+        // Get an immediate fix so the map updates right away before the watch stream kicks in
+        navigator.geolocation.getCurrentPosition(
+            handlePositionSuccess,
+            handlePositionError,
+            geolocationOptions
+        );
+
+        // Start watching position continuously
         watchIdRef.current = navigator.geolocation.watchPosition(
             handlePositionSuccess,
             handlePositionError,
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0,
-            }
+            geolocationOptions
         );
 
         // Set up interval to send updates to server
@@ -118,7 +127,7 @@ export function useGpsTracking({
                 sendLocationUpdate(lastPositionRef.current);
             }
         }, updateInterval);
-    }, [handlePositionSuccess, handlePositionError, sendLocationUpdate, updateInterval]);
+    }, [handlePositionSuccess, handlePositionError, sendLocationUpdate, updateInterval, geolocationOptions]);
 
     // Stop GPS tracking
     const stopTracking = useCallback(async () => {

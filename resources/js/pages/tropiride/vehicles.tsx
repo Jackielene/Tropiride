@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents, Circle, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents, Circle, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 
@@ -248,6 +248,19 @@ function calculateRealisticTravelTime(distanceKm: number): number {
   return Math.max(3, Math.round(totalTime));
 }
 
+// Haversine fallback when routing API is unavailable
+function haversineDistanceKm(from: Location, to: Location): number {
+  const R = 6371; // Earth's radius in km
+  const dLat = (to.lat - from.lat) * Math.PI / 180;
+  const dLon = (to.lng - from.lng) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(from.lat * Math.PI / 180) * Math.cos(to.lat * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Distance in km
+}
+
 // Geocoding function to convert place names to coordinates (single result)
 async function geocodeLocation(query: string): Promise<Location | null> {
   if (!query || query.trim().length < 3) return null;
@@ -322,6 +335,7 @@ export default function TropirideVehicles() {
   const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
   const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
   const [mapZoom, setMapZoom] = useState<number>(14);
+  const [routePolyline, setRoutePolyline] = useState<[number, number][] | null>(null);
   const [isGeocodingPickup, setIsGeocodingPickup] = useState(false);
   const [isGeocodingDropoff, setIsGeocodingDropoff] = useState(false);
   const [pickupInputValue, setPickupInputValue] = useState('');
@@ -342,6 +356,8 @@ export default function TropirideVehicles() {
   const dropoffInputRef = useRef<HTMLInputElement>(null);
   const geocodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const autocompleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const geoWatchIdRef = useRef<number | null>(null);
+  const hasReverseGeocodedRef = useRef(false);
 
   // Validate dates whenever they change
   useEffect(() => {
@@ -372,57 +388,8 @@ export default function TropirideVehicles() {
   // Auto-detect location on mount - GPS is optional
   useEffect(() => {
     setIsGettingLocation(true);
-    
-    if (navigator.geolocation) {
-      // Request GPS location with relaxed settings
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude, accuracy } = position.coords;
-          setGpsAccuracy(accuracy);
-          
-          // Reverse geocode to get address
-          setIsReverseGeocoding(true);
-          try {
-            const address = await reverseGeocode(latitude, longitude);
-            
-            setPickupLocation({
-              lat: latitude,
-              lng: longitude,
-              address: address
-            });
-            setPickupInputValue(address);
-            setMapCenter([latitude, longitude]);
-          } catch {
-            setPickupLocation({
-              lat: latitude,
-              lng: longitude,
-              address: 'Current Location'
-            });
-            setPickupInputValue('Current Location');
-            setMapCenter([latitude, longitude]);
-          }
-          setIsReverseGeocoding(false);
-          setIsGettingLocation(false);
-        },
-        (error) => {
-          // GPS failed or permission denied - silently fall back to default location
-          // This is expected behavior if user denies permission
-          setPickupLocation({
-            lat: SIARGAO_CENTER[0],
-            lng: SIARGAO_CENTER[1],
-            address: 'Siargao Island'
-          });
-          setPickupInputValue('Siargao Island');
-          setIsGettingLocation(false);
-          setGpsAccuracy(null);
-        },
-        {
-          enableHighAccuracy: false, // Use network/WiFi positioning (faster, less battery)
-          timeout: 10000, // 10 second timeout
-          maximumAge: 60000, // Accept positions up to 1 minute old
-        }
-      );
-    } else {
+
+    if (!navigator.geolocation) {
       // Browser doesn't support geolocation
       setPickupLocation({
         lat: SIARGAO_CENTER[0],
@@ -431,7 +398,72 @@ export default function TropirideVehicles() {
       });
       setPickupInputValue('Siargao Island');
       setIsGettingLocation(false);
+      return;
     }
+
+    const handleGeoSuccess = async (position: GeolocationPosition) => {
+      const { latitude, longitude, accuracy } = position.coords;
+      setGpsAccuracy(accuracy);
+      setMapCenter([latitude, longitude]);
+      setIsGettingLocation(false);
+
+      // Keep the pickup marker synced with live location
+      setPickupLocation((prev) => ({
+        lat: latitude,
+        lng: longitude,
+        address: prev?.address || 'Current Location'
+      }));
+
+      // Fill the input if it's empty
+      setPickupInputValue((prev) => prev || 'Current Location');
+
+      // Only reverse geocode once to avoid hammering the API while watching position
+      if (!hasReverseGeocodedRef.current) {
+        hasReverseGeocodedRef.current = true;
+        setIsReverseGeocoding(true);
+        try {
+          const address = await reverseGeocode(latitude, longitude);
+          setPickupLocation({
+            lat: latitude,
+            lng: longitude,
+            address
+          });
+          setPickupInputValue((prev) => prev || address);
+        } catch {
+          // Keep fallback address
+        } finally {
+          setIsReverseGeocoding(false);
+        }
+      }
+    };
+
+    const handleGeoError = () => {
+      // GPS failed or permission denied - fall back to default location
+      setPickupLocation({
+        lat: SIARGAO_CENTER[0],
+        lng: SIARGAO_CENTER[1],
+        address: 'Siargao Island'
+      });
+      setPickupInputValue('Siargao Island');
+      setIsGettingLocation(false);
+      setGpsAccuracy(null);
+    };
+
+    geoWatchIdRef.current = navigator.geolocation.watchPosition(
+      handleGeoSuccess,
+      handleGeoError,
+      {
+        enableHighAccuracy: true, // request the most precise location available
+        timeout: 10000, // 10 second timeout
+        maximumAge: 0, // no cached positions, always fresh
+      }
+    );
+
+    return () => {
+      if (geoWatchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(geoWatchIdRef.current);
+      }
+    };
   }, []);
 
   // Update map center and zoom when pickup suggestions change
@@ -467,30 +499,14 @@ export default function TropirideVehicles() {
     }
   }, [pickupSuggestions, pickupLocation]);
 
-  // Calculate fare, distance, and time when both locations and dates are set
+  // Calculate fare, distance, and time when both locations and dates are set (uses routed road distance with fallback)
   useEffect(() => {
-    if (pickupLocation && dropoffLocation) {
-      // Simple calculation using Haversine formula for distance
-      const R = 6371; // Earth's radius in km
-      const dLat = (dropoffLocation.lat - pickupLocation.lat) * Math.PI / 180;
-      const dLon = (dropoffLocation.lng - pickupLocation.lng) * Math.PI / 180;
-      const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(pickupLocation.lat * Math.PI / 180) * Math.cos(dropoffLocation.lat * Math.PI / 180) *
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      const distance = R * c; // Distance in km
-      
-      setEstimatedDistance(distance);
-      
-      // Calculate realistic estimated time considering traffic and distance
-      const estimatedTimeMinutes = calculateRealisticTravelTime(distance);
-      setEstimatedTime(estimatedTimeMinutes);
-      
-      // Calculate fare based on service type
+    let cancelled = false;
+
+    const computeFare = (distanceKm: number) => {
       let fare = 0;
       const vehicle = vehicleConfig[selectedVehicle];
-      
+
       switch (serviceType) {
         case 'per_day_rental':
           if (pickupDate && returnDate) {
@@ -526,7 +542,7 @@ export default function TropirideVehicles() {
             'van': { base: 50, perKm: 12 },
           };
           const rates = perKmRates[selectedVehicle];
-          fare = Math.round(rates.base + (distance * rates.perKm));
+          fare = Math.round(rates.base + (distanceKm * rates.perKm));
           break;
           
         case 'airport_port_transfer':
@@ -545,8 +561,53 @@ export default function TropirideVehicles() {
       if (passengerCount > vehicle.capacity) {
         fare = Math.round(fare * 1.1);
       }
-      
+
       setEstimatedFare(fare);
+    };
+
+    const compute = async () => {
+      if (!(pickupLocation && dropoffLocation)) {
+        if (!cancelled) {
+          setEstimatedFare(null);
+          setEstimatedDistance(null);
+          setEstimatedTime(null);
+          setRoutePolyline(null);
+        }
+        return;
+      }
+
+      // Fallback distance while we fetch road route
+      const fallbackDistance = haversineDistanceKm(pickupLocation, dropoffLocation);
+      let chosenDistance = fallbackDistance;
+      let polyline: [number, number][] | null = null;
+
+      try {
+        const routeUrl = `https://router.project-osrm.org/route/v1/driving/${pickupLocation.lng},${pickupLocation.lat};${dropoffLocation.lng},${dropoffLocation.lat}?overview=full&geometries=geojson&alternatives=false&steps=false`;
+        const res = await fetch(routeUrl);
+        if (!res.ok) throw new Error('Routing request failed');
+        const data = await res.json();
+        const route = data?.routes?.[0];
+        if (route?.distance) {
+          chosenDistance = route.distance / 1000; // meters to km
+          if (route.geometry?.coordinates?.length) {
+            polyline = route.geometry.coordinates.map(
+              ([lng, lat]: [number, number]) => [lat, lng] as [number, number]
+            );
+          }
+        }
+      } catch (err) {
+        // Keep fallback distance and no polyline if routing fails
+      }
+
+      if (cancelled) return;
+
+      setEstimatedDistance(chosenDistance);
+      setRoutePolyline(polyline);
+
+      const estimatedTimeMinutes = calculateRealisticTravelTime(chosenDistance);
+      setEstimatedTime(estimatedTimeMinutes);
+
+      computeFare(chosenDistance);
 
       // Center map between pickup and dropoff, or focus on pickup if it's the only one
       if (pickupLocation && dropoffLocation) {
@@ -564,11 +625,13 @@ export default function TropirideVehicles() {
         const centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
         setMapCenter([centerLat, centerLng]);
       }
-    } else {
-      setEstimatedFare(null);
-      setEstimatedDistance(null);
-      setEstimatedTime(null);
-    }
+    };
+
+    compute();
+
+    return () => {
+      cancelled = true;
+    };
   }, [pickupLocation, dropoffLocation, selectedVehicle, pickupDate, returnDate, passengerCount, serviceType, arrivalDepartureTime]);
 
   const handleSetCurrentLocation = async () => {
@@ -613,9 +676,9 @@ export default function TropirideVehicles() {
           alert('Location access denied or unavailable. Please enter your location manually or click on the map.');
         },
         {
-          enableHighAccuracy: false,
+          enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 60000,
+          maximumAge: 0,
         }
       );
     } else {
@@ -1124,6 +1187,14 @@ export default function TropirideVehicles() {
                 </>
               )}
               
+              {/* Routed path following roads */}
+              {routePolyline && (
+                <Polyline
+                  positions={routePolyline}
+                  pathOptions={{ color: '#06b6d4', weight: 5, opacity: 0.8 }}
+                />
+              )}
+
               {/* Selected pickup location marker */}
               {pickupLocation && (
                 <>

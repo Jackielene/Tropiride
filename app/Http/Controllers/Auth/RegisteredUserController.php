@@ -57,7 +57,12 @@ class RegisteredUserController extends Controller
             return redirect()->intended(route('driver.dashboard', absolute: false));
         }
 
-        // Redirect customer users to tropiride landing page
+        // Redirect customer users to customer profile page
+        if ($user->isCustomer()) {
+            return redirect()->intended(route('tropiride.profile', absolute: false));
+        }
+
+        // Fallback: redirect to tropiride landing page
         return redirect()->intended(route('tropiride.landing', absolute: false));
     }
 }
