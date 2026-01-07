@@ -1,6 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../wayfinder'
 import profile from './profile'
 import booking from './booking'
+import settings from './settings'
 import password from './password'
 import twoFactor from './two-factor'
 /**
@@ -315,6 +316,7 @@ messages: Object.assign(messages, messages),
 debug: Object.assign(debug, debug),
 profile: Object.assign(profile, profile),
 booking: Object.assign(booking, booking),
+settings: Object.assign(settings, settings),
 password: Object.assign(password, password),
 twoFactor: Object.assign(twoFactor, twoFactor),
 }

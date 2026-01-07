@@ -5,7 +5,7 @@ import messages4ba6e9 from './messages'
  * @see app/Http/Controllers/ChatController.php:30
  * @route '/chat/bookings/{booking}/messages'
  */
-export const messages = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const messages = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: messages.url(args, options),
     method: 'get',
 })
@@ -20,7 +20,7 @@ messages.definition = {
  * @see app/Http/Controllers/ChatController.php:30
  * @route '/chat/bookings/{booking}/messages'
  */
-messages.url = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+messages.url = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { booking: args }
     }
@@ -53,7 +53,7 @@ messages.url = (args: { booking: number | { id: number } } | [booking: number | 
  * @see app/Http/Controllers/ChatController.php:30
  * @route '/chat/bookings/{booking}/messages'
  */
-messages.get = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+messages.get = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: messages.url(args, options),
     method: 'get',
 })
@@ -62,7 +62,7 @@ messages.get = (args: { booking: number | { id: number } } | [booking: number | 
  * @see app/Http/Controllers/ChatController.php:30
  * @route '/chat/bookings/{booking}/messages'
  */
-messages.head = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+messages.head = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: messages.url(args, options),
     method: 'head',
 })
@@ -72,7 +72,7 @@ messages.head = (args: { booking: number | { id: number } } | [booking: number |
  * @see app/Http/Controllers/ChatController.php:30
  * @route '/chat/bookings/{booking}/messages'
  */
-    const messagesForm = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const messagesForm = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: messages.url(args, options),
         method: 'get',
     })
@@ -82,7 +82,7 @@ messages.head = (args: { booking: number | { id: number } } | [booking: number |
  * @see app/Http/Controllers/ChatController.php:30
  * @route '/chat/bookings/{booking}/messages'
  */
-        messagesForm.get = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        messagesForm.get = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: messages.url(args, options),
             method: 'get',
         })
@@ -91,7 +91,7 @@ messages.head = (args: { booking: number | { id: number } } | [booking: number |
  * @see app/Http/Controllers/ChatController.php:30
  * @route '/chat/bookings/{booking}/messages'
  */
-        messagesForm.head = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        messagesForm.head = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: messages.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',

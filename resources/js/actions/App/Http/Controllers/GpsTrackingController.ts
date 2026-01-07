@@ -114,7 +114,7 @@ stopTracking.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-export const getDriverLocation = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const getDriverLocation = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getDriverLocation.url(args, options),
     method: 'get',
 })
@@ -129,7 +129,7 @@ getDriverLocation.definition = {
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-getDriverLocation.url = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+getDriverLocation.url = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { booking: args }
     }
@@ -162,7 +162,7 @@ getDriverLocation.url = (args: { booking: number | { id: number } } | [booking: 
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-getDriverLocation.get = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+getDriverLocation.get = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: getDriverLocation.url(args, options),
     method: 'get',
 })
@@ -171,7 +171,7 @@ getDriverLocation.get = (args: { booking: number | { id: number } } | [booking: 
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-getDriverLocation.head = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+getDriverLocation.head = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: getDriverLocation.url(args, options),
     method: 'head',
 })
@@ -181,7 +181,7 @@ getDriverLocation.head = (args: { booking: number | { id: number } } | [booking:
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-    const getDriverLocationForm = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const getDriverLocationForm = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: getDriverLocation.url(args, options),
         method: 'get',
     })
@@ -191,7 +191,7 @@ getDriverLocation.head = (args: { booking: number | { id: number } } | [booking:
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-        getDriverLocationForm.get = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        getDriverLocationForm.get = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: getDriverLocation.url(args, options),
             method: 'get',
         })
@@ -200,7 +200,7 @@ getDriverLocation.head = (args: { booking: number | { id: number } } | [booking:
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-        getDriverLocationForm.head = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        getDriverLocationForm.head = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: getDriverLocation.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',
@@ -216,7 +216,7 @@ getDriverLocation.head = (args: { booking: number | { id: number } } | [booking:
  * @see app/Http/Controllers/GpsTrackingController.php:182
  * @route '/tropiride/tracking/{booking}'
  */
-export const trackingPage = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const trackingPage = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: trackingPage.url(args, options),
     method: 'get',
 })
@@ -231,7 +231,7 @@ trackingPage.definition = {
  * @see app/Http/Controllers/GpsTrackingController.php:182
  * @route '/tropiride/tracking/{booking}'
  */
-trackingPage.url = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+trackingPage.url = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { booking: args }
     }
@@ -264,7 +264,7 @@ trackingPage.url = (args: { booking: number | { id: number } } | [booking: numbe
  * @see app/Http/Controllers/GpsTrackingController.php:182
  * @route '/tropiride/tracking/{booking}'
  */
-trackingPage.get = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+trackingPage.get = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: trackingPage.url(args, options),
     method: 'get',
 })
@@ -273,7 +273,7 @@ trackingPage.get = (args: { booking: number | { id: number } } | [booking: numbe
  * @see app/Http/Controllers/GpsTrackingController.php:182
  * @route '/tropiride/tracking/{booking}'
  */
-trackingPage.head = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+trackingPage.head = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: trackingPage.url(args, options),
     method: 'head',
 })
@@ -283,7 +283,7 @@ trackingPage.head = (args: { booking: number | { id: number } } | [booking: numb
  * @see app/Http/Controllers/GpsTrackingController.php:182
  * @route '/tropiride/tracking/{booking}'
  */
-    const trackingPageForm = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const trackingPageForm = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: trackingPage.url(args, options),
         method: 'get',
     })
@@ -293,7 +293,7 @@ trackingPage.head = (args: { booking: number | { id: number } } | [booking: numb
  * @see app/Http/Controllers/GpsTrackingController.php:182
  * @route '/tropiride/tracking/{booking}'
  */
-        trackingPageForm.get = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        trackingPageForm.get = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: trackingPage.url(args, options),
             method: 'get',
         })
@@ -302,7 +302,7 @@ trackingPage.head = (args: { booking: number | { id: number } } | [booking: numb
  * @see app/Http/Controllers/GpsTrackingController.php:182
  * @route '/tropiride/tracking/{booking}'
  */
-        trackingPageForm.head = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        trackingPageForm.head = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: trackingPage.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',

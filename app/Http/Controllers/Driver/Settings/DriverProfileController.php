@@ -37,7 +37,7 @@ class DriverProfileController extends Controller
 
         $request->user()->save();
 
-        return to_route('driver.profile.edit');
+        return to_route('driver.settings.profile.edit');
     }
 
     /**

@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-export const location = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const location = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: location.url(args, options),
     method: 'get',
 })
@@ -19,7 +19,7 @@ location.definition = {
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-location.url = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
+location.url = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { booking: args }
     }
@@ -52,7 +52,7 @@ location.url = (args: { booking: number | { id: number } } | [booking: number | 
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-location.get = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+location.get = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: location.url(args, options),
     method: 'get',
 })
@@ -61,7 +61,7 @@ location.get = (args: { booking: number | { id: number } } | [booking: number | 
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-location.head = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+location.head = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: location.url(args, options),
     method: 'head',
 })
@@ -71,7 +71,7 @@ location.head = (args: { booking: number | { id: number } } | [booking: number |
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-    const locationForm = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    const locationForm = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
         action: location.url(args, options),
         method: 'get',
     })
@@ -81,7 +81,7 @@ location.head = (args: { booking: number | { id: number } } | [booking: number |
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-        locationForm.get = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        locationForm.get = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: location.url(args, options),
             method: 'get',
         })
@@ -90,7 +90,7 @@ location.head = (args: { booking: number | { id: number } } | [booking: number |
  * @see app/Http/Controllers/GpsTrackingController.php:108
  * @route '/gps/booking/{booking}/location'
  */
-        locationForm.head = (args: { booking: number | { id: number } } | [booking: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+        locationForm.head = (args: { booking: string | number | { id: string | number } } | [booking: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
             action: location.url(args, {
                         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
                             _method: 'HEAD',

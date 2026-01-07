@@ -9,9 +9,9 @@ use Inertia\Inertia;
 Route::middleware(['auth', 'driver'])->group(function () {
     Route::redirect('driver/settings', '/driver/settings/profile');
 
-    Route::get('driver/settings/profile', [DriverProfileController::class, 'edit'])->name('driver.profile.edit');
-    Route::patch('driver/settings/profile', [DriverProfileController::class, 'update'])->name('driver.profile.update');
-    Route::delete('driver/settings/profile', [DriverProfileController::class, 'destroy'])->name('driver.profile.destroy');
+    Route::get('driver/settings/profile', [DriverProfileController::class, 'edit'])->name('driver.settings.profile.edit');
+    Route::patch('driver/settings/profile', [DriverProfileController::class, 'update'])->name('driver.settings.profile.update');
+    Route::delete('driver/settings/profile', [DriverProfileController::class, 'destroy'])->name('driver.settings.profile.destroy');
 
     Route::get('driver/settings/password', [DriverPasswordController::class, 'edit'])->name('driver.password.edit');
 
