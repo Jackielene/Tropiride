@@ -63,6 +63,13 @@ export default function TropirideProfile() {
   const { auth, flash, bookings = [] } = usePage<SharedData>().props;
   const user = auth.user;
 
+  // Redirect drivers to their dashboard - they should not access customer pages
+  useEffect(() => {
+    if (auth?.user?.role === 'driver') {
+      router.visit('/driver/dashboard');
+    }
+  }, [auth]);
+
   const [isEditing, setIsEditing] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -389,6 +396,7 @@ export default function TropirideProfile() {
         returnDate: returnDisplay,
         vehicleType: booking.vehicle_type || null,
         serviceType: booking.service_type || null,
+        driverOption: booking.driver_option || null,
         passengers: booking.passengers || null,
         driver_id: booking.driver_id || null, // For GPS tracking
         // Airport/Port transfer fields
@@ -820,8 +828,8 @@ export default function TropirideProfile() {
                             )}
                           </div>
 
-                          {/* Vehicle Type and Passengers */}
-                          {(booking.vehicleType || booking.passengers) && (
+                          {/* Vehicle Type, Driver Option, and Passengers */}
+                          {(booking.vehicleType || booking.passengers || booking.driverOption) && (
                             <div className="grid md:grid-cols-2 gap-3 mb-3">
                               {booking.vehicleType && (
                                 <div className="flex items-center gap-2 text-sm">
@@ -833,6 +841,23 @@ export default function TropirideProfile() {
                                        booking.vehicleType === 'tuktuk' ? 'Tuk-Tuk' : 
                                        booking.vehicleType.charAt(0).toUpperCase() + booking.vehicleType.slice(1)}
                                     </p>
+                                    {booking.driverOption && (booking.vehicleType === 'tuktuk' || booking.vehicleType === 'van') && (
+                                      <p className={`text-xs mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold ${
+                                        booking.driverOption === 'with_driver' 
+                                          ? 'bg-cyan-100 text-cyan-700 border border-cyan-200' 
+                                          : 'bg-green-100 text-green-700 border border-green-200'
+                                      }`}>
+                                        {booking.driverOption === 'with_driver' ? (
+                                          <>
+                                            <FaUsers className="text-xs" /> With Driver
+                                          </>
+                                        ) : (
+                                          <>
+                                            <FaCar className="text-xs" /> Self-Drive
+                                          </>
+                                        )}
+                                      </p>
+                                    )}
                                   </div>
                                 </div>
                               )}

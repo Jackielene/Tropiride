@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
 import { 
   FaCheckCircle, 
   FaCar, 
@@ -16,7 +17,7 @@ import {
   FaRoute,
   FaCalendarDay
 } from 'react-icons/fa';
-import { Link } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import { Head } from '@inertiajs/react';
 
 type ServiceType = 'per_day_rental' | 'pickup_dropoff' | 'airport_port_transfer';
@@ -127,6 +128,15 @@ const staggerContainer = {
 };
 
 export default function TropirideConfirmation({ bookingData: propBookingData }: TropirideConfirmationProps) {
+  const { auth } = usePage().props as any;
+
+  // Redirect drivers to their dashboard - they should not access customer pages
+  useEffect(() => {
+    if (auth?.user?.role === 'driver') {
+      router.visit('/driver/dashboard');
+    }
+  }, [auth]);
+
   // Default booking data if none provided (for testing)
   const defaultBookingData: BookingData = {
     id: 'TRP-2024-001234',

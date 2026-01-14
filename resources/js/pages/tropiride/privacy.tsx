@@ -1,4 +1,5 @@
 import { motion } from "framer-motion"
+import { useEffect } from "react"
 import {
   FaCar,
   FaShieldAlt,
@@ -12,7 +13,7 @@ import {
   FaCookie,
   FaCheckCircle,
 } from "react-icons/fa"
-import { Link } from "@inertiajs/react"
+import { Link, usePage, router } from "@inertiajs/react"
 import { Head } from "@inertiajs/react"
 import TropirideNavbar from "@/components/tropiride/TropirideNavbar"
 
@@ -120,6 +121,15 @@ const sections = [
 ]
 
 export default function PrivacyPolicyPage() {
+  const { auth } = usePage().props as any;
+
+  // Redirect drivers to their dashboard - they should not access customer pages
+  useEffect(() => {
+    if (auth?.user?.role === 'driver') {
+      router.visit('/driver/dashboard');
+    }
+  }, [auth]);
+
   return (
     <>
       <Head title="Privacy Policy - Tropiride Siargao" />

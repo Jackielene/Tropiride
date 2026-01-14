@@ -24,7 +24,7 @@ import {
   FaStar,
   FaAward,
 } from "react-icons/fa"
-import { Link } from "@inertiajs/react"
+import { Link, usePage, router } from "@inertiajs/react"
 import { Head } from "@inertiajs/react"
 import TropirideNavbar from "@/components/tropiride/TropirideNavbar"
 
@@ -135,6 +135,7 @@ const faqs = [
 
 export default function ContactPage() {
   const { scrollYProgress } = useScroll()
+  const { auth } = usePage().props as any
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -145,6 +146,13 @@ export default function ContactPage() {
   const [activeFaq, setActiveFaq] = useState<number | null>(null)
   const [activeChannel, setActiveChannel] = useState(0)
   const [isSubmitted, setIsSubmitted] = useState(false)
+
+  // Redirect drivers to their dashboard - they should not access customer pages
+  useEffect(() => {
+    if (auth?.user?.role === 'driver') {
+      router.visit('/driver/dashboard');
+    }
+  }, [auth]);
 
   const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 150])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3, 0.5], [1, 0.7, 0])

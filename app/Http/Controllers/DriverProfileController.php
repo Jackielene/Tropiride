@@ -38,7 +38,7 @@ class DriverProfileController extends Controller
             \Log::info('Driver ' . $user->id . ' profile auto-submitted for verification');
             
             return redirect()->route('driver.dashboard')
-                ->with('status', 'Profile completed and submitted for verification! You will be able to accept rides once approved by admin.');
+                ->with('success', 'Profile saved! ✅ Pending request. Once approved by the admin, you can now accept rides.');
         }
 
         return redirect()->route('driver.dashboard')
@@ -78,7 +78,7 @@ class DriverProfileController extends Controller
                 \Log::info('Driver ' . $user->id . ' profile auto-submitted for verification after avatar upload');
                 
                 return redirect()->back()
-                    ->with('status', 'Avatar uploaded! Your profile is now complete and submitted for verification.');
+                    ->with('success', 'Profile picture uploaded! ✅ Pending request. Once approved by the admin, you can now accept rides.');
             }
 
             return redirect()->back()
@@ -123,7 +123,7 @@ class DriverProfileController extends Controller
                 \Log::info('Driver ' . $user->id . ' profile auto-submitted for verification after license front upload');
                 
                 return redirect()->route('driver.dashboard')
-                    ->with('status', 'License uploaded! Your profile is now complete and submitted for verification.');
+                    ->with('success', 'License uploaded! ✅ Pending request. Once approved by the admin, you can now accept rides.');
             }
 
             return redirect()->route('driver.dashboard')
@@ -168,7 +168,7 @@ class DriverProfileController extends Controller
                 \Log::info('Driver ' . $user->id . ' profile auto-submitted for verification after license back upload');
                 
                 return redirect()->route('driver.dashboard')
-                    ->with('status', 'License uploaded! Your profile is now complete and submitted for verification.');
+                    ->with('success', 'License uploaded! ✅ Pending request. Once approved by the admin, you can now accept rides.');
             }
 
             return redirect()->route('driver.dashboard')
@@ -199,7 +199,7 @@ class DriverProfileController extends Controller
         \Log::info('Driver ' . $user->id . ' submitted profile for verification');
 
         return redirect()->route('driver.dashboard')
-            ->with('status', 'Your profile has been submitted for verification. You will be able to accept rides once it is approved.');
+            ->with('success', '✅ Pending request. Once approved by the admin, you can now accept rides.');
     }
 
     /**
@@ -229,6 +229,6 @@ class DriverProfileController extends Controller
         \Log::info('Driver ' . $user->id . ' resubmitted profile for verification');
 
         return redirect()->route('driver.dashboard')
-            ->with('status', 'Your profile has been resubmitted for verification. You will receive a notification once it is approved.');
+            ->with('success', '✅ Pending request. Once approved by the admin, you can now accept rides.');
     }
 }

@@ -293,17 +293,76 @@ async function geocodeLocation(query: string): Promise<Location | null> {
 }
 
 // Vehicle pricing and capacity configuration (moved outside component to prevent re-creation)
+// PRICING ALIGNED WITH LANDING PAGE "CHOOSE YOUR RIDE" SECTION
 const vehicleConfig = {
-  'tricycle': { capacity: 3, dailyRate: 300, pickupDropoffRate: 150, airportPortRate: 200, name: 'Tricycle' },
-  'tuktuk': { capacity: 4, dailyRate: 400, pickupDropoffRate: 180, airportPortRate: 250, name: 'Tuk-Tuk' },
-  'habal-habal': { capacity: 2, dailyRate: 250, pickupDropoffRate: 120, airportPortRate: 150, name: 'Habal-Habal' },
-  'multicab': { capacity: 8, dailyRate: 500, pickupDropoffRate: 250, airportPortRate: 350, name: 'Multicab' },
-  'van': { capacity: 14, dailyRate: 700, pickupDropoffRate: 400, airportPortRate: 500, name: 'Van' },
+  'tricycle': { 
+    capacity: 3, 
+    dailyRate: 300,           // Matches landing page: 300 PHP/day
+    pickupDropoffRate: 150,   // Base rate for point-to-point
+    airportPortRate: 200,     // Airport/port transfers
+    name: 'Tricycle' 
+  },
+  'tuktuk': { 
+    capacity: 4, 
+    dailyRate: 2500,          // Matches landing page: 2500 PHP/day (WITH DRIVER)
+    dailyRateWithoutDriver: 1500, // Matches landing page: 1500 PHP/day (WITHOUT DRIVER)
+    pickupDropoffRate: 180,   // Base rate for point-to-point
+    airportPortRate: 250,     // Airport/port transfers
+    name: 'Tuk-Tuk' 
+  },
+  'habal-habal': { 
+    capacity: 2, 
+    dailyRate: 300,           // Matches landing page: 300 PHP/day (Motorcycle/Habal-habal)
+    pickupDropoffRate: 120,   // Base rate for point-to-point
+    airportPortRate: 150,     // Airport/port transfers
+    name: 'Habal-Habal' 
+  },
+  'multicab': { 
+    capacity: 8, 
+    dailyRate: 2500,          // Matches landing page: 2500 PHP/day (WITH DRIVER)
+    pickupDropoffRate: 250,   // Base rate for point-to-point
+    airportPortRate: 350,     // Airport/port transfers
+    name: 'Multicab' 
+  },
+  'van': { 
+    capacity: 14, 
+    dailyRate: 5000,          // Matches landing page: 5000 PHP/day (WITH DRIVER)
+    dailyRateWithoutDriver: 3000, // Matches landing page: 3000 PHP/day (WITHOUT DRIVER)
+    pickupDropoffRate: 400,   // Base rate for point-to-point
+    airportPortRate: 500,     // Airport/port transfers
+    name: 'Van' 
+  },
+};
+
+// Pricing alignment with landing "Choose Your Ride" (driver options)
+// This map is used when users come from the landing page with pre-selected vehicle
+const landingPricingMap: Record<string, number | Record<string, number>> = {
+  'tricycle': 300,              // Per day rate
+  'habal-habal': 300,           // Per day rate (Motorcycle)
+  'tuktuk': {
+    'with driver': 2500,        // Per day rate WITH driver
+    'without driver': 1500,     // Per day rate WITHOUT driver
+  },
+  'multicab': {
+    'with driver': 2500,        // Per day rate WITH driver
+  },
+  'van': {
+    'with driver': 5000,        // Per day rate WITH driver
+    'without driver': 3000,     // Per day rate WITHOUT driver
+  },
 };
 
 export default function TropirideVehicles() {
-  const { flash } = usePage().props as any;
-  const [serviceType, setServiceType] = useState<ServiceType>('pickup_dropoff');
+  const { flash, auth } = usePage().props as any;
+  // Default to 'per_day_rental' to match landing page "Choose Your Ride" pricing
+  const [serviceType, setServiceType] = useState<ServiceType>('per_day_rental');
+
+  // Redirect drivers to their dashboard - they should not access customer pages
+  useEffect(() => {
+    if (auth?.user?.role === 'driver') {
+      router.visit('/driver/dashboard');
+    }
+  }, [auth]);
   const [pickupLocation, setPickupLocation] = useState<Location | null>(null);
   const [dropoffLocation, setDropoffLocation] = useState<Location | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(SIARGAO_CENTER);
@@ -352,12 +411,56 @@ export default function TropirideVehicles() {
   const [dateValidationError, setDateValidationError] = useState<string>('');
   const [selectedVehicle, setSelectedVehicle] = useState<'tricycle' | 'tuktuk' | 'habal-habal' | 'multicab' | 'van'>('multicab');
   const [passengerCount, setPassengerCount] = useState<number>(1);
+  const [landingPrice, setLandingPrice] = useState<number | null>(null);
+  const [landingVehicle, setLandingVehicle] = useState<string | null>(null);
+  const [landingDriverOption, setLandingDriverOption] = useState<string | null>(null);
+  const [driverOption, setDriverOption] = useState<'with_driver' | 'without_driver'>('with_driver'); // Driver selection state
   const pickupInputRef = useRef<HTMLInputElement>(null);
   const dropoffInputRef = useRef<HTMLInputElement>(null);
   const geocodeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const autocompleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const geoWatchIdRef = useRef<number | null>(null);
   const hasReverseGeocodedRef = useRef(false);
+
+  // Prefill state when coming from landing "Choose Your Ride"
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const vehicleParam = params.get('vehicle');
+    const passengersParam = params.get('passengers');
+    const priceParam = params.get('price');
+    const driverOptionParam = params.get('driver_option');
+
+    if (vehicleParam && ['tricycle', 'tuktuk', 'habal-habal', 'multicab', 'van'].includes(vehicleParam)) {
+      setSelectedVehicle(vehicleParam as typeof selectedVehicle);
+      setLandingVehicle(vehicleParam);
+    }
+
+    if (passengersParam) {
+      const parsedPassengers = parseInt(passengersParam, 10);
+      if (!Number.isNaN(parsedPassengers) && parsedPassengers > 0) {
+        setPassengerCount(Math.min(parsedPassengers, 14));
+      }
+    }
+
+    if (priceParam) {
+      const parsedPrice = parseFloat(priceParam);
+      if (!Number.isNaN(parsedPrice) && parsedPrice > 0) {
+        setEstimatedFare(parsedPrice);
+        setLandingPrice(parsedPrice);
+      }
+    }
+
+    if (driverOptionParam) {
+      setLandingDriverOption(driverOptionParam);
+      // Set the driver option based on landing page selection
+      if (driverOptionParam.toLowerCase().includes('without')) {
+        setDriverOption('without_driver');
+      } else {
+        setDriverOption('with_driver');
+      }
+    }
+
+  }, []);
 
   // Validate dates whenever they change
   useEffect(() => {
@@ -504,6 +607,12 @@ export default function TropirideVehicles() {
     let cancelled = false;
 
     const computeFare = (distanceKm: number) => {
+      // If we have a fixed price from the landing page, use it instead of calculating
+      if (landingPrice !== null) {
+        setEstimatedFare(landingPrice);
+        return;
+      }
+
       let fare = 0;
       const vehicle = vehicleConfig[selectedVehicle];
 
@@ -516,18 +625,25 @@ export default function TropirideVehicles() {
             const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
             const isSameDay = daysDiff === 0 || pickup.toDateString() === returnD.toDateString();
             
+            // Determine daily rate based on driver option
+            let dailyRate = vehicle.dailyRate;
+            if (driverOption === 'without_driver' && 'dailyRateWithoutDriver' in vehicle) {
+              dailyRate = (vehicle as any).dailyRateWithoutDriver;
+            }
+            
             if (isSameDay) {
-              // Same-day rental rate
-              const sameDayRates: Record<string, number> = {
-                'habal-habal': 180,
-                'tricycle': 220,
-                'tuktuk': 280,
-                'multicab': 350,
-                'van': 500,
+              // Same-day rental rates (80% of full day rate)
+              const sameDayRates: Record<string, Record<string, number>> = {
+                'habal-habal': { with_driver: 240, without_driver: 240 },
+                'tricycle': { with_driver: 240, without_driver: 240 },
+                'tuktuk': { with_driver: 2000, without_driver: 1200 },  // 80% of 2500/1500
+                'multicab': { with_driver: 2000, without_driver: 2000 },
+                'van': { with_driver: 4000, without_driver: 2400 },     // 80% of 5000/3000
               };
-              fare = sameDayRates[selectedVehicle] || vehicle.dailyRate;
+              const rates = sameDayRates[selectedVehicle];
+              fare = rates ? rates[driverOption] : dailyRate;
             } else {
-              fare = daysDiff * vehicle.dailyRate;
+              fare = daysDiff * dailyRate;
             }
           }
           break;
@@ -632,7 +748,7 @@ export default function TropirideVehicles() {
     return () => {
       cancelled = true;
     };
-  }, [pickupLocation, dropoffLocation, selectedVehicle, pickupDate, returnDate, passengerCount, serviceType, arrivalDepartureTime]);
+  }, [pickupLocation, dropoffLocation, selectedVehicle, pickupDate, returnDate, passengerCount, serviceType, arrivalDepartureTime, landingPrice, driverOption]);
 
   const handleSetCurrentLocation = async () => {
     if (navigator.geolocation) {
@@ -946,17 +1062,23 @@ export default function TropirideVehicles() {
       alert('Please select a payment method');
       return;
     }
+    if (!pickupLocation || !dropoffLocation) {
+      alert('Please set both pickup and drop-off locations.');
+      return;
+    }
+    const pickup = pickupLocation!;
+    const dropoff = dropoffLocation!;
     
     setShowPaymentModal(false);
     setIsRequesting(true);
     
     router.post('/tropiride/ride-request', {
-      pickup_location: pickupLocation.address,
-      pickup_lat: pickupLocation.lat,
-      pickup_lng: pickupLocation.lng,
-      dropoff_location: dropoffLocation.address,
-      dropoff_lat: dropoffLocation.lat,
-      dropoff_lng: dropoffLocation.lng,
+      pickup_location: pickup.address,
+      pickup_lat: pickup.lat,
+      pickup_lng: pickup.lng,
+      dropoff_location: dropoff.address,
+      dropoff_lat: dropoff.lat,
+      dropoff_lng: dropoff.lng,
       estimated_fare: estimatedFare || 0,
       distance_km: estimatedDistance || 0,
       estimated_time_minutes: estimatedTime || 0,
@@ -964,6 +1086,7 @@ export default function TropirideVehicles() {
       return_date: serviceType === 'per_day_rental' ? (returnDate && returnTime ? `${returnDate} ${returnTime}` : (returnDate || null)) : null,
       vehicle_type: selectedVehicle,
       service_type: serviceType,
+      driver_option: (selectedVehicle === 'tuktuk' || selectedVehicle === 'van') && serviceType === 'per_day_rental' ? driverOption : null,
       passengers: passengerCount,
       flight_vessel_number: serviceType === 'airport_port_transfer' ? flightVesselNumber : null,
       terminal_info: serviceType === 'airport_port_transfer' ? terminalInfo : null,
@@ -972,10 +1095,11 @@ export default function TropirideVehicles() {
       payment_method: selectedPaymentMethod,
     }, {
       preserveScroll: true,
-      onSuccess: (page) => {
+      onSuccess: (page: any) => {
         setIsRequesting(false);
         // Check if there's a flash status message
-        if (page.props.flash?.status) {
+        const flashStatus = page?.props?.flash?.status;
+        if (flashStatus) {
           setShowSuccess(true);
         } else {
           // Also show success even if no flash message
@@ -1019,16 +1143,23 @@ export default function TropirideVehicles() {
 
   // Submit booking with PayPal transaction ID
   const submitBookingWithPaypal = (transactionId: string) => {
+    if (!pickupLocation || !dropoffLocation) {
+      alert('Please set both pickup and drop-off locations.');
+      return;
+    }
+    const pickup = pickupLocation!;
+    const dropoff = dropoffLocation!;
+
     setShowPaymentModal(false);
     setIsRequesting(true);
     
     router.post('/tropiride/ride-request', {
-      pickup_location: pickupLocation.address,
-      pickup_lat: pickupLocation.lat,
-      pickup_lng: pickupLocation.lng,
-      dropoff_location: dropoffLocation.address,
-      dropoff_lat: dropoffLocation.lat,
-      dropoff_lng: dropoffLocation.lng,
+      pickup_location: pickup.address,
+      pickup_lat: pickup.lat,
+      pickup_lng: pickup.lng,
+      dropoff_location: dropoff.address,
+      dropoff_lat: dropoff.lat,
+      dropoff_lng: dropoff.lng,
       estimated_fare: estimatedFare || 0,
       distance_km: estimatedDistance || 0,
       estimated_time_minutes: estimatedTime || 0,
@@ -1045,7 +1176,7 @@ export default function TropirideVehicles() {
       paypal_transaction_id: transactionId,
     }, {
       preserveScroll: true,
-      onSuccess: (page) => {
+      onSuccess: (page: any) => {
         setIsRequesting(false);
         setShowSuccess(true);
         // Clear form fields after successful submission
@@ -1296,6 +1427,74 @@ export default function TropirideVehicles() {
                 </p>
               </div>
 
+              {/* Driver Option Selection - Only for Per-Day Rental */}
+              {serviceType === 'per_day_rental' && (selectedVehicle === 'tuktuk' || selectedVehicle === 'van') && (
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    <FaUsers className="inline mr-2" />
+                    Driver Option
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setDriverOption('with_driver')}
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                        driverOption === 'with_driver'
+                          ? 'border-cyan-500 bg-cyan-50 shadow-md'
+                          : 'border-gray-200 bg-white hover:border-cyan-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <FaUsers className={`text-lg ${driverOption === 'with_driver' ? 'text-cyan-600' : 'text-gray-500'}`} />
+                        <div className="text-left">
+                          <p className={`font-semibold text-sm ${driverOption === 'with_driver' ? 'text-cyan-700' : 'text-gray-700'}`}>
+                            With Driver
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {selectedVehicle === 'tuktuk' ? '₱2,500/day' : '₱5,000/day'}
+                          </p>
+                        </div>
+                        {driverOption === 'with_driver' && (
+                          <FaCheckCircle className="text-cyan-500 ml-auto" />
+                        )}
+                      </div>
+                    </motion.button>
+                    
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setDriverOption('without_driver')}
+                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                        driverOption === 'without_driver'
+                          ? 'border-green-500 bg-green-50 shadow-md'
+                          : 'border-gray-200 bg-white hover:border-green-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-2">
+                        <FaCar className={`text-lg ${driverOption === 'without_driver' ? 'text-green-600' : 'text-gray-500'}`} />
+                        <div className="text-left">
+                          <p className={`font-semibold text-sm ${driverOption === 'without_driver' ? 'text-green-700' : 'text-gray-700'}`}>
+                            Self-Drive
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {selectedVehicle === 'tuktuk' ? '₱1,500/day' : '₱3,000/day'}
+                          </p>
+                        </div>
+                        {driverOption === 'without_driver' && (
+                          <FaCheckCircle className="text-green-500 ml-auto" />
+                        )}
+                      </div>
+                    </motion.button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    {driverOption === 'with_driver' 
+                      ? '✓ Includes professional driver service' 
+                      : '⚠️ Valid driver\'s license required'}
+                  </p>
+                </div>
+              )}
+
               {/* Vehicle Selection */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-3">
@@ -1305,11 +1504,40 @@ export default function TropirideVehicles() {
                 <div className="space-y-2">
                   {Object.entries(vehicleConfig).map(([id, vehicle]) => {
                     const isSelected = selectedVehicle === id;
-                    const price = serviceType === 'per_day_rental' 
-                      ? vehicle.dailyRate 
-                      : serviceType === 'pickup_dropoff' 
-                        ? vehicle.pickupDropoffRate 
-                        : vehicle.airportPortRate;
+                    const landingOverride = (() => {
+                      if (landingVehicle !== id) return null;
+                      const pricing = landingPricingMap[id];
+                      if (typeof pricing === 'number') {
+                        return pricing;
+                      }
+                      if (pricing && typeof pricing === 'object') {
+                        const optionKey = landingDriverOption?.toLowerCase();
+                        if (optionKey && pricing[optionKey] !== undefined) {
+                          return pricing[optionKey];
+                        }
+                        const firstPrice = Object.values(pricing)[0];
+                        if (typeof firstPrice === 'number') return firstPrice;
+                      }
+                      if (landingPrice !== null) return landingPrice;
+                      return null;
+                    })();
+
+                    // Determine the correct price based on service type and driver option
+                    let price: number;
+                    if (landingOverride !== null) {
+                      price = landingOverride;
+                    } else if (serviceType === 'per_day_rental') {
+                      // Check if vehicle has with/without driver pricing
+                      if (driverOption === 'without_driver' && 'dailyRateWithoutDriver' in vehicle) {
+                        price = (vehicle as any).dailyRateWithoutDriver;
+                      } else {
+                        price = vehicle.dailyRate;
+                      }
+                    } else if (serviceType === 'pickup_dropoff') {
+                      price = vehicle.pickupDropoffRate;
+                    } else {
+                      price = vehicle.airportPortRate;
+                    }
                     const priceLabel = serviceType === 'per_day_rental' ? '/day' : '';
                     
                     const IconComponent = id === 'habal-habal' ? FaMotorcycle 
@@ -1621,9 +1849,9 @@ export default function TropirideVehicles() {
               </div>
 
               {/* Date Selection - Conditional based on service type */}
-              <div className="space-y-3">
+              <div className="space-y-3 relative z-10">
                 {/* Pickup Date */}
-                <div className={`rounded-xl p-4 border-2 ${
+                <div className={`rounded-xl p-4 border-2 relative ${
                   serviceType === 'per_day_rental' ? 'bg-blue-50 border-blue-200' 
                   : serviceType === 'pickup_dropoff' ? 'bg-green-50 border-green-200'
                   : 'bg-purple-50 border-purple-200'
@@ -1632,46 +1860,58 @@ export default function TropirideVehicles() {
                     <FaCalendarAlt className="inline mr-2" />
                     {serviceType === 'per_day_rental' ? 'Pickup Date & Time' : 'Date'}
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="date"
-                      value={pickupDate}
-                      onChange={(e) => setPickupDate(e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-cyan-500 focus:outline-none text-sm"
-                    />
-                    {(serviceType === 'per_day_rental' || serviceType === 'pickup_dropoff') && (
+                  <div className="grid grid-cols-2 gap-2 relative">
+                    <div className="relative">
                       <input
-                        type="time"
-                        value={pickupTime}
-                        onChange={(e) => setPickupTime(e.target.value)}
-                        className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-cyan-500 focus:outline-none text-sm"
+                        type="date"
+                        value={pickupDate}
+                        onChange={(e) => setPickupDate(e.target.value)}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-cyan-500 focus:outline-none text-sm relative z-20"
+                        style={{ colorScheme: 'light' }}
                       />
+                    </div>
+                    {(serviceType === 'per_day_rental' || serviceType === 'pickup_dropoff') && (
+                      <div className="relative">
+                        <input
+                          type="time"
+                          value={pickupTime}
+                          onChange={(e) => setPickupTime(e.target.value)}
+                          className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-cyan-500 focus:outline-none text-sm relative z-20"
+                          style={{ colorScheme: 'light' }}
+                        />
+                      </div>
                     )}
                   </div>
                 </div>
 
                 {/* Return Date - Only for Per-Day Rental */}
                 {serviceType === 'per_day_rental' && (
-                  <div className="bg-orange-50 rounded-xl p-4 border-2 border-orange-200">
+                  <div className="bg-orange-50 rounded-xl p-4 border-2 border-orange-200 relative">
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       <FaCalendarAlt className="inline mr-2" />
                       Return Date & Time
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <input
-                        type="date"
-                        value={returnDate}
-                        onChange={(e) => setReturnDate(e.target.value)}
-                        min={pickupDate || new Date().toISOString().split('T')[0]}
-                        className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm"
-                      />
-                      <input
-                        type="time"
-                        value={returnTime}
-                        onChange={(e) => setReturnTime(e.target.value)}
-                        className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm"
-                      />
+                    <div className="grid grid-cols-2 gap-2 relative">
+                      <div className="relative">
+                        <input
+                          type="date"
+                          value={returnDate}
+                          onChange={(e) => setReturnDate(e.target.value)}
+                          min={pickupDate || new Date().toISOString().split('T')[0]}
+                          className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm relative z-20"
+                          style={{ colorScheme: 'light' }}
+                        />
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="time"
+                          value={returnTime}
+                          onChange={(e) => setReturnTime(e.target.value)}
+                          className="w-full p-2.5 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none text-sm relative z-20"
+                          style={{ colorScheme: 'light' }}
+                        />
+                      </div>
                     </div>
                     {dateValidationError && (
                       <p className="mt-2 text-xs text-red-600">{dateValidationError}</p>
@@ -1988,10 +2228,7 @@ export default function TropirideVehicles() {
               </span>
               {selectedPaymentMethod && (
                 <span className="text-sm text-gray-600 mt-2 block">
-                  <strong>Payment Method:</strong> {
-                    selectedPaymentMethod === 'debit' ? 'Debit/Credit Card' :
-                    selectedPaymentMethod === 'paypal' ? 'PayPal' : 'Cash Payment'
-                  }
+                  <strong>Payment Method:</strong> {selectedPaymentMethod === 'paypal' ? 'PayPal' : 'Cash Payment'}
                 </span>
               )}
             </DialogDescription>
@@ -2023,3 +2260,4 @@ export default function TropirideVehicles() {
     </>
   );
 }
+

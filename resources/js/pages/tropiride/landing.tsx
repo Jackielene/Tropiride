@@ -19,11 +19,60 @@ import {
   FaRoute,
   FaLocationArrow,
   FaCalendarAlt,
+  FaTimes,
 } from "react-icons/fa"
-import { Link, usePage } from "@inertiajs/react"
+import { Link, usePage, router } from "@inertiajs/react"
 import { Head } from "@inertiajs/react"
 import TropirideNavbar from "@/components/tropiride/TropirideNavbar"
 import { SharedData } from "@/types"
+import tricycleImg from "@/assets/tricycle.jpg"
+import motorImg from "@/assets/motor.jpg"
+import tuktukImg from "@/assets/tuktuk.jpg"
+import tuktuk2Img from "@/assets/Tuktuk-2.jpg"
+import multicabImg from "@/assets/multicab.jpg"
+import vanImg from "@/assets/van.jpg"
+import van2Img from "@/assets/van-2.jpeg"
+
+const vehicleImageMap: Record<
+  string,
+  { src: string; title: string; driverOption?: "With driver" | "Without driver" }[]
+> = {
+  Tricycle: [{ src: tricycleImg, title: "Tricycle" }],
+  Motorcycle: [{ src: motorImg, title: "Motorcycle" }],
+  Tuktuk: [
+    { src: tuktukImg, title: "Tuktuk", driverOption: "With driver" },
+    { src: tuktuk2Img, title: "Tuktuk", driverOption: "Without driver" },
+  ],
+  Multicab: [{ src: multicabImg, title: "Multicab" }],
+  "Car (Private Van)": [
+    { src: vanImg, title: "Van", driverOption: "With driver" },
+    { src: van2Img, title: "Van", driverOption: "Without driver" },
+  ],
+}
+
+type PricingOption = { label: string; price: number }
+
+const vehiclePricing: Record<string, PricingOption[]> = {
+  Tricycle: [{ label: "Tricycle", price: 300 }],
+  Motorcycle: [{ label: "Habal-habal", price: 300 }],
+  Tuktuk: [
+    { label: "With driver", price: 2500 },
+    { label: "Without driver", price: 1500 },
+  ],
+  Multicab: [{ label: "With driver", price: 2500 }],
+  "Car (Private Van)": [
+    { label: "With driver", price: 5000 },
+    { label: "Without driver", price: 3000 },
+  ],
+}
+
+const vehicleSlugMap: Record<string, string> = {
+  Tricycle: "tricycle",
+  Motorcycle: "habal-habal",
+  Tuktuk: "tuktuk",
+  Multicab: "multicab",
+  "Car (Private Van)": "van",
+}
 
 const vehicleTypes = [
   {
@@ -33,7 +82,8 @@ const vehicleTypes = [
     description: "Motorcycle with sidecar, perfect for quick local transport and short trips around the island",
     color: "from-yellow-400 via-amber-400 to-orange-400",
     shadowColor: "rgba(251, 191, 36, 0.5)",
-    image: "https://images.unsplash.com/photo-1558981852-426c6c22a060?w=800&auto=format&fit=crop",
+    image: vehicleImageMap["Tricycle"]?.[0]?.src,
+    pricing: vehiclePricing["Tricycle"] ?? [],
   },
   {
     icon: FaMotorcycle,
@@ -42,7 +92,8 @@ const vehicleTypes = [
     description: "Perfect for solo travelers and couples who want flexibility and speed",
     color: "from-rose-500 via-pink-500 to-orange-400",
     shadowColor: "rgba(244, 63, 94, 0.5)",
-    image: "https://images.unsplash.com/photo-1558981852-426c6c22a060?w=800&auto=format&fit=crop",
+    image: vehicleImageMap["Motorcycle"]?.[0]?.src,
+    pricing: vehiclePricing["Motorcycle"] ?? [],
   },
   {
     icon: FaMotorcycle,
@@ -51,7 +102,8 @@ const vehicleTypes = [
     description: "Traditional three-wheeled vehicle for short trips and local exploration",
     color: "from-emerald-500 via-green-500 to-teal-500",
     shadowColor: "rgba(16, 185, 129, 0.5)",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&auto=format&fit=crop",
+    image: vehicleImageMap["Tuktuk"]?.[0]?.src,
+    pricing: vehiclePricing["Tuktuk"] ?? [],
   },
   {
     icon: FaCar,
@@ -60,7 +112,8 @@ const vehicleTypes = [
     description: "Perfect for small groups and island hopping adventures",
     color: "from-purple-500 via-indigo-500 to-blue-500",
     shadowColor: "rgba(147, 51, 234, 0.5)",
-    image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&auto=format&fit=crop",
+    image: vehicleImageMap["Multicab"]?.[0]?.src,
+    pricing: vehiclePricing["Multicab"] ?? [],
   },
   {
     icon: FaCar,
@@ -69,7 +122,8 @@ const vehicleTypes = [
     description: "Comfortable and spacious vehicles ideal for families and groups, perfect for island tours",
     color: "from-cyan-500 via-teal-500 to-blue-500",
     shadowColor: "rgba(6, 182, 212, 0.5)",
-    image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&auto=format&fit=crop",
+    image: vehicleImageMap["Car (Private Van)"]?.[0]?.src,
+    pricing: vehiclePricing["Car (Private Van)"] ?? [],
   },
 ]
 
@@ -176,6 +230,16 @@ export default function TropirideLanding() {
   const [activeTestimonial, setActiveTestimonial] = useState(0)
   const { auth } = usePage<SharedData>().props
   const isAuthenticated = auth.user && auth.user.id
+  const [selectedVehicle, setSelectedVehicle] = useState<(typeof vehicleTypes)[0] | null>(null)
+
+  // Redirect drivers to their dashboard - they should not access customer pages
+  useEffect(() => {
+    if (auth?.user?.role === 'driver') {
+      router.visit('/driver/dashboard');
+    }
+  }, [auth]);
+  const [selectedDriverOption, setSelectedDriverOption] = useState<string | null>(null)
+  const [selectedPassengers, setSelectedPassengers] = useState<number>(1)
 
   const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 300])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3, 0.5], [1, 0.5, 0])
@@ -191,6 +255,40 @@ export default function TropirideLanding() {
     }, 5000)
     return () => clearInterval(interval)
   }, [])
+
+  const handleVehicleSelect = (vehicle: (typeof vehicleTypes)[0]) => {
+    setSelectedVehicle(vehicle)
+    const defaultDriver = vehicle.pricing?.[0]?.label ?? null
+    setSelectedDriverOption(defaultDriver)
+    setSelectedPassengers(1)
+  }
+  const closeModal = () => {
+    setSelectedVehicle(null)
+    setSelectedDriverOption(null)
+    setSelectedPassengers(1)
+  }
+  const selectedImages = selectedVehicle ? vehicleImageMap[selectedVehicle.name] ?? [] : []
+  const selectedPricing = selectedVehicle?.pricing ?? []
+
+  const handleProceedToBooking = () => {
+    if (!selectedVehicle) return
+    const slug = vehicleSlugMap[selectedVehicle.name]
+    if (!slug) return
+
+    const chosenPrice =
+      selectedPricing.find((option) => option.label === selectedDriverOption)?.price ??
+      selectedPricing[0]?.price
+
+    router.visit("/tropiride/vehicles", {
+      method: "get",
+      data: {
+        vehicle: slug,
+        passengers: selectedPassengers,
+        price: chosenPrice,
+        driver_option: selectedDriverOption ?? undefined,
+      },
+    })
+  }
 
   return (
     <>
@@ -628,7 +726,13 @@ export default function TropirideLanding() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
             {vehicleTypes.map((vehicle, index) => (
-              <VehicleCard key={vehicle.name} vehicle={vehicle} index={index} totalItems={vehicleTypes.length} />
+              <VehicleCard
+                key={vehicle.name}
+                vehicle={vehicle}
+                index={index}
+                totalItems={vehicleTypes.length}
+                onSelect={handleVehicleSelect}
+              />
             ))}
           </div>
         </div>
@@ -1278,11 +1382,198 @@ export default function TropirideLanding() {
           </motion.div>
         </div>
       </footer>
+
+      <AnimatePresence>
+        {selectedVehicle && (
+          <motion.div
+            key="vehicle-modal"
+            className="fixed inset-0 z-[120] flex items-center justify-center px-4 backdrop-blur-sm bg-black/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeModal}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-cyan-600">
+                    Choose Your Ride
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-2xl font-bold text-gray-900">{selectedVehicle.name}</h3>
+                    <span className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">
+                      {selectedVehicle.capacity}
+                    </span>
+                  </div>
+                  <p className="text-gray-600">{selectedVehicle.description}</p>
+                  {selectedPricing.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {selectedPricing.map((option) => (
+                        <span
+                          key={`${selectedVehicle.name}-${option.label}`}
+                          className="inline-flex items-center gap-2 rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-800 border border-cyan-100"
+                        >
+                          <span>{option.label}</span>
+                          <span className="text-gray-900">₱{option.price.toLocaleString()}</span>
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">Pricing info available upon request.</p>
+                  )}
+
+                  {selectedPricing.length > 0 && (
+                    <div className="pt-4 space-y-3">
+                      <p className="text-sm font-semibold text-gray-800">Choose driver option</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedPricing.map((option) => {
+                          const isActive =
+                            selectedDriverOption === option.label ||
+                            (!selectedDriverOption && option === selectedPricing[0])
+                          return (
+                            <button
+                              key={`${selectedVehicle.name}-${option.label}-btn`}
+                              onClick={() => setSelectedDriverOption(option.label)}
+                              className={`px-3 py-2 rounded-xl border text-sm font-semibold transition ${
+                                isActive
+                                  ? "border-cyan-500 bg-cyan-50 text-cyan-800 shadow-sm"
+                                  : "border-gray-200 bg-white text-gray-700 hover:border-cyan-200"
+                              }`}
+                            >
+                              {option.label} • ₱{option.price.toLocaleString()}
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-semibold text-gray-800">Passengers</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setSelectedPassengers((prev) => Math.max(1, prev - 1))}
+                            className="h-9 w-9 rounded-full border border-gray-200 text-gray-700 hover:border-cyan-300"
+                            aria-label="Decrease passengers"
+                          >
+                            -
+                          </button>
+                          <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-900 text-sm font-semibold min-w-[64px] text-center">
+                            {selectedPassengers} {selectedPassengers === 1 ? "Passenger" : "Passengers"}
+                          </span>
+                          <button
+                            onClick={() => setSelectedPassengers((prev) => Math.min(14, prev + 1))}
+                            className="h-9 w-9 rounded-full border border-gray-200 text-gray-700 hover:border-cyan-300"
+                            aria-label="Increase passengers"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="pt-1">
+                        <button
+                          onClick={handleProceedToBooking}
+                          className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold shadow-lg hover:shadow-xl transition"
+                        >
+                          Proceed to Booking
+                          <span className="text-sm bg-white/20 rounded-full px-3 py-1">
+                            ₱
+                            {(
+                              selectedPricing.find((option) => option.label === selectedDriverOption)?.price ??
+                              selectedPricing[0]?.price ??
+                              0
+                            ).toLocaleString()}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-500 transition hover:border-cyan-200 hover:text-cyan-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500"
+                  aria-label="Close vehicle details"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="px-6 py-6">
+                {selectedImages.length > 0 ? (
+                  <div className="grid gap-5 md:grid-cols-2">
+                    {selectedImages.map((image, idx) => {
+                      const driverLabel =
+                        image.driverOption ??
+                        (selectedImages.length === 2 ? (idx === 0 ? "With driver" : "Without driver") : undefined)
+                      const normalizedLabel = driverLabel?.toLowerCase()
+                      const priceOption =
+                        (normalizedLabel
+                          ? selectedPricing.find((option) => option.label.toLowerCase() === normalizedLabel)
+                          : undefined) ?? selectedPricing[0]
+                      return (
+                        <div
+                          key={`${image.src}-${idx}`}
+                          className="overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 shadow-sm"
+                        >
+                          <div className="relative">
+                            <img src={image.src} alt={selectedVehicle.name} className="h-64 w-full object-cover" />
+                            {driverLabel && (
+                              <span className="absolute left-4 top-4 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-cyan-700 shadow">
+                                {driverLabel}
+                              </span>
+                            )}
+                            {priceOption && (
+                              <span className="absolute right-4 top-4 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-700 shadow">
+                                ₱{priceOption.price.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between bg-white px-4 py-3">
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{image.title}</p>
+                              <p className="text-xs text-gray-500">Preview from assets</p>
+                            </div>
+                            <div className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-semibold text-cyan-700">
+                              {selectedVehicle.name}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-10 text-center text-gray-500">
+                    No local image found for this vehicle yet.
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
 
-function VehicleCard({ vehicle, index, totalItems }: { vehicle: (typeof vehicleTypes)[0]; index: number; totalItems?: number }) {
+function VehicleCard({
+  vehicle,
+  index,
+  totalItems,
+  onSelect,
+}: {
+  vehicle: (typeof vehicleTypes)[0]
+  index: number
+  totalItems?: number
+  onSelect: (vehicle: (typeof vehicleTypes)[0]) => void
+}) {
+  const backgroundImage = vehicle.image ?? vehicleImageMap[vehicle.name]?.[0]?.src ?? ""
   // Center Multicab (index 3) and Car (index 4) in the second row
   const getGridClasses = () => {
     if (totalItems === 5 && index === 3) {
@@ -1318,14 +1609,24 @@ function VehicleCard({ vehicle, index, totalItems }: { vehicle: (typeof vehicleT
          duration: 0.3, 
          ease: [0.4, 0, 0.2, 1],
        }}
-       className="relative h-full min-h-[320px] rounded-3xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 focus-within:ring-4 focus-within:ring-cyan-400/50 focus-within:outline-none"
+      className="relative h-full min-h-[320px] rounded-3xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 focus-within:ring-4 focus-within:ring-cyan-400/50 focus-within:outline-none"
+      role="button"
+      tabIndex={0}
+      aria-label={`View details for ${vehicle.name}`}
+      onClick={() => onSelect(vehicle)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault()
+          onSelect(vehicle)
+        }
+      }}
      >
         {/* Background Image */}
         <div className="absolute inset-0">
            <motion.div
              className="w-full h-full bg-cover bg-center"
              style={{
-               backgroundImage: `url(${vehicle.image})`,
+              backgroundImage: `url(${backgroundImage})`,
              }}
              whileHover={{ scale: 1.02 }}
              transition={{ duration: 0.3, ease: "easeOut" }}

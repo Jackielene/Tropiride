@@ -34,6 +34,7 @@ class Booking extends Model
         'passengers',
         'vehicle_type',
         'service_type',
+        'driver_option',
         'flight_vessel_number',
         'terminal_info',
         'arrival_departure_time',

@@ -27,6 +27,7 @@ interface GpsPosition {
 interface GpsTrackingCardProps {
     bookingId: number | null;
     isActiveRide: boolean;
+    autoStart?: boolean;
     onTrackingChange?: (isTracking: boolean) => void;
 }
 
@@ -37,6 +38,7 @@ const TRACKING_BOOKING_KEY = 'tropiride_tracking_booking_id';
 export default function GpsTrackingCard({ 
     bookingId, 
     isActiveRide,
+    autoStart = false,
     onTrackingChange 
 }: GpsTrackingCardProps) {
     const [isTracking, setIsTracking] = useState(false);
@@ -47,6 +49,7 @@ export default function GpsTrackingCard({
     const [sendInterval, setSendInterval] = useState<NodeJS.Timeout | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
     const hasAutoStarted = useRef(false);
+    const prevAutoStartRef = useRef(false);
 
     // Save tracking state to localStorage
     const saveTrackingState = useCallback((tracking: boolean, bId: number | null) => {
@@ -243,6 +246,16 @@ export default function GpsTrackingCard({
             stopTracking();
         }
     }, [isActiveRide, isTracking, stopTracking]);
+
+    // Auto-start tracking when autoStart prop becomes true (driver clicked "Start")
+    useEffect(() => {
+        // Detect when autoStart changes from false to true
+        if (autoStart && !prevAutoStartRef.current && !isTracking && isActiveRide && bookingId) {
+            console.log('Auto-starting GPS tracking - driver started the ride');
+            startTracking(true);
+        }
+        prevAutoStartRef.current = autoStart;
+    }, [autoStart, isTracking, isActiveRide, bookingId, startTracking]);
 
     const formatSpeed = (speed: number | null) => {
         if (speed === null) return 'N/A';

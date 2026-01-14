@@ -59,6 +59,13 @@ export default function MessagesPage({ bookings: initialBookings, initialBooking
     const [bookings, setBookings] = useState<ChatConversation[]>(initialBookings);
     const [activeBookingId, setActiveBookingId] = useState<number | null>(initialBookingId);
 
+    // Redirect drivers to their dashboard - they should not access customer pages
+    useEffect(() => {
+        if (auth?.user?.role === 'driver') {
+            router.visit('/driver/dashboard');
+        }
+    }, [auth]);
+
     // Sync with props when they change (e.g., after Inertia navigation)
     useEffect(() => {
         setBookings(initialBookings);

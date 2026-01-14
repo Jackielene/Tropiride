@@ -24,7 +24,7 @@ import {
   FaCalendarDay,
   FaRoute
 } from 'react-icons/fa';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import PaymentHandler from '@/components/payments/PaymentHandler';
 
 // Service type definitions
@@ -191,6 +191,7 @@ const fadeInUp = {
 };
 
 export default function TropirideBooking() {
+  const { auth } = usePage().props as any;
   const [currentStep, setCurrentStep] = useState(1);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [bookingData, setBookingData] = useState<BookingData>({
@@ -217,6 +218,13 @@ export default function TropirideBooking() {
   });
 
   const totalSteps = 4; // Added step for service type selection
+
+  // Redirect drivers to their dashboard - they should not access customer pages
+  useEffect(() => {
+    if (auth?.user?.role === 'driver') {
+      router.visit('/driver/dashboard');
+    }
+  }, [auth]);
 
   // Check URL parameters on component mount
   useEffect(() => {

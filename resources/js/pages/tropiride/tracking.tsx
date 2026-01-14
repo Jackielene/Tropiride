@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -90,6 +90,7 @@ interface BookingData {
     dropoff_lat: number;
     dropoff_lng: number;
     vehicle_type: string;
+    driver_option?: string | null;
     estimated_fare: number;
     driver: {
         id: number;
@@ -153,6 +154,13 @@ export default function TrackingPage({ booking }: TrackingPageProps) {
     const [shouldFollow, setShouldFollow] = useState(true);
     const [isConnected, setIsConnected] = useState(false);
     const echoChannelRef = useRef<any>(null);
+
+    // Redirect drivers to their dashboard - they should not access customer pages
+    useEffect(() => {
+        if (auth?.user?.role === 'driver') {
+            router.visit('/driver/dashboard');
+        }
+    }, [auth]);
 
     // Calculate map center
     const mapCenter: [number, number] = driverLocation 
@@ -469,6 +477,15 @@ export default function TrackingPage({ booking }: TrackingPageProps) {
                                             <div className="flex-1">
                                                 <p className="font-semibold text-gray-900">{booking.driver.name}</p>
                                                 <p className="text-sm text-gray-600 capitalize">{booking.vehicle_type}</p>
+                                                {booking.driver_option && (booking.vehicle_type === 'tuktuk' || booking.vehicle_type === 'van') && (
+                                                    <p className={`text-xs mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-semibold ${
+                                                        booking.driver_option === 'with_driver' 
+                                                            ? 'bg-cyan-100 text-cyan-700 border border-cyan-200' 
+                                                            : 'bg-green-100 text-green-700 border border-green-200'
+                                                    }`}>
+                                                        {booking.driver_option === 'with_driver' ? '👥 With Driver' : '🚗 Self-Drive'}
+                                                    </p>
+                                                )}
                                             </div>
                                             <Button
                                                 size="sm"

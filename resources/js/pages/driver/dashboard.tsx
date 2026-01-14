@@ -393,12 +393,55 @@ export default function DriverDashboard({
                                 </div>
                             )}
 
-                            {/* Pending Message */}
+                            {/* Pending Message - Enhanced */}
                             {driver.is_verification_pending && (
-                                <div className="mb-6 p-4 bg-blue-100 dark:bg-blue-900 border border-blue-300 dark:border-blue-700 rounded-lg">
-                                    <p className="text-blue-800 dark:text-blue-200">
-                                        Our admin team will review your documents shortly. You'll be able to accept rides once approved.
-                                    </p>
+                                <div className="mb-6">
+                                    <div className="relative overflow-hidden bg-gradient-to-r from-blue-50 via-cyan-50 to-blue-50 dark:from-blue-950 dark:via-cyan-950 dark:to-blue-950 border-2 border-blue-300 dark:border-blue-700 rounded-xl p-6 shadow-lg">
+                                        {/* Animated background pulse */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-cyan-400/10 animate-pulse"></div>
+                                        
+                                        <div className="relative z-10">
+                                            {/* Icon and Title */}
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="flex-shrink-0 w-12 h-12 bg-blue-500 dark:bg-blue-600 rounded-full flex items-center justify-center animate-pulse">
+                                                    <Clock className="h-6 w-6 text-white" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-blue-900 dark:text-blue-100">
+                                                        ⏳ Pending Request
+                                                    </h3>
+                                                    <p className="text-sm text-blue-700 dark:text-blue-300">
+                                                        Your profile is under review
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Main message */}
+                                            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg p-4 mb-4 border border-blue-200 dark:border-blue-800">
+                                                <p className="text-blue-900 dark:text-blue-100 font-medium text-base leading-relaxed">
+                                                    Once approved by the admin, you can now accept rides and start earning!
+                                                </p>
+                                            </div>
+
+                                            {/* Additional info */}
+                                            <div className="flex items-start gap-3 text-sm text-blue-800 dark:text-blue-200">
+                                                <div className="flex-shrink-0 mt-0.5">
+                                                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium mb-1">What happens next:</p>
+                                                    <ul className="space-y-1 list-disc list-inside">
+                                                        <li>Admin reviews your profile and documents</li>
+                                                        <li>You'll receive a notification once approved</li>
+                                                        <li>Available rides will become visible</li>
+                                                        <li>You can start accepting bookings immediately</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 

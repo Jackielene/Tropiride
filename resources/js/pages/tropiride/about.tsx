@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from "framer-motion"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   FaCar,
   FaShieldAlt,
@@ -26,7 +26,7 @@ import {
   FaClock,
   FaHandshake,
 } from "react-icons/fa"
-import { Link } from "@inertiajs/react"
+import { Link, usePage, router } from "@inertiajs/react"
 import { Head } from "@inertiajs/react"
 import TropirideNavbar from "@/components/tropiride/TropirideNavbar"
 
@@ -152,6 +152,14 @@ const safetyGuidelines = [
 export default function AboutPage() {
   const { scrollYProgress } = useScroll()
   const [activeTab, setActiveTab] = useState(0)
+  const { auth } = usePage().props as any
+
+  // Redirect drivers to their dashboard - they should not access customer pages
+  useEffect(() => {
+    if (auth?.user?.role === 'driver') {
+      router.visit('/driver/dashboard');
+    }
+  }, [auth]);
 
   const heroY = useTransform(scrollYProgress, [0, 0.5], [0, 300])
   const heroOpacity = useTransform(scrollYProgress, [0, 0.3, 0.5], [1, 0.5, 0])

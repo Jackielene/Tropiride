@@ -1,4 +1,5 @@
 import { motion } from "framer-motion"
+import { useEffect } from "react"
 import {
   FaCar,
   FaFileContract,
@@ -15,7 +16,7 @@ import {
   FaClock,
   FaHandshake,
 } from "react-icons/fa"
-import { Link } from "@inertiajs/react"
+import { Link, usePage, router } from "@inertiajs/react"
 import { Head } from "@inertiajs/react"
 import TropirideNavbar from "@/components/tropiride/TropirideNavbar"
 
@@ -159,6 +160,15 @@ const sections = [
 ]
 
 export default function TermsPage() {
+  const { auth } = usePage().props as any;
+
+  // Redirect drivers to their dashboard - they should not access customer pages
+  useEffect(() => {
+    if (auth?.user?.role === 'driver') {
+      router.visit('/driver/dashboard');
+    }
+  }, [auth]);
+
   return (
     <>
       <Head title="Terms of Service - Tropiride Siargao" />

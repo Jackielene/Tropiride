@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   FaCar,
   FaQuestionCircle,
@@ -18,7 +18,7 @@ import {
   FaInfoCircle,
   FaExclamationTriangle,
 } from "react-icons/fa"
-import { Link } from "@inertiajs/react"
+import { Link, usePage, router } from "@inertiajs/react"
 import { Head } from "@inertiajs/react"
 import TropirideNavbar from "@/components/tropiride/TropirideNavbar"
 
@@ -199,9 +199,17 @@ const faqs: FAQItem[] = [
 ]
 
 export default function FAQPage() {
+  const { auth } = usePage().props as any
   const [activeCategory, setActiveCategory] = useState("all")
   const [openFAQ, setOpenFAQ] = useState<number | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
+
+  // Redirect drivers to their dashboard - they should not access customer pages
+  useEffect(() => {
+    if (auth?.user?.role === 'driver') {
+      router.visit('/driver/dashboard');
+    }
+  }, [auth]);
 
   const filteredFAQs = faqs.filter((faq) => {
     const matchesCategory = activeCategory === "all" || faq.category === activeCategory

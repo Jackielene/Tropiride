@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { MapPin, Phone, Car, ArrowLeft, Navigation } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useImperativeHandle, forwardRef } from 'react';
 import GpsTrackingCard from '@/components/driver/GpsTrackingCard';
 
 interface Customer {
@@ -50,6 +50,8 @@ export default function DriverRides({ assignedBookings = [], driver }: Props) {
     const [isUpdating, setIsUpdating] = useState<number | null>(null);
     const [statusModal, setStatusModal] = useState<{ bookingId: number; status: 'in_progress' | 'completed' } | null>(null);
     const [activeTrackingBookingId, setActiveTrackingBookingId] = useState<number | null>(null);
+    const [shouldAutoStartTracking, setShouldAutoStartTracking] = useState<boolean>(false);
+    const [bookingIdToTrack, setBookingIdToTrack] = useState<number | null>(null);
 
     // Find active bookings (accepted or in_progress) for GPS tracking
     const activeBookings = assignedBookings.filter(b => 
@@ -87,13 +89,28 @@ export default function DriverRides({ assignedBookings = [], driver }: Props) {
 
     const handleUpdateStatus = (bookingId: number, newStatus: 'in_progress' | 'completed') => {
         setIsUpdating(bookingId);
+        
+        // If starting a ride (changing to 'in_progress'), prepare to auto-start GPS tracking
+        if (newStatus === 'in_progress') {
+            setBookingIdToTrack(bookingId);
+            setShouldAutoStartTracking(true);
+        }
+        
         router.patch(
             `/driver/bookings/${bookingId}/status`,
             { status: newStatus },
             {
                 preserveScroll: true,
+                onSuccess: () => {
+                    // GPS tracking will auto-start via the GpsTrackingCard component
+                    // when it detects shouldAutoStartTracking is true
+                },
                 onFinish: () => {
                     setIsUpdating(null);
+                    // Reset auto-start flag after a delay to allow the GPS component to process it
+                    setTimeout(() => {
+                        setShouldAutoStartTracking(false);
+                    }, 1000);
                 },
             }
         );
@@ -135,11 +152,12 @@ export default function DriverRides({ assignedBookings = [], driver }: Props) {
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         <div className="md:col-span-1">
                             <GpsTrackingCard 
-                                bookingId={activeTrackingBookingId || activeBookings[0]?.id || null}
+                                bookingId={bookingIdToTrack || activeTrackingBookingId || activeBookings[0]?.id || null}
                                 isActiveRide={activeBookings.length > 0}
+                                autoStart={shouldAutoStartTracking}
                                 onTrackingChange={(isTracking) => {
                                     if (isTracking && activeBookings.length > 0) {
-                                        setActiveTrackingBookingId(activeBookings[0].id);
+                                        setActiveTrackingBookingId(bookingIdToTrack || activeBookings[0].id);
                                     } else {
                                         setActiveTrackingBookingId(null);
                                     }
